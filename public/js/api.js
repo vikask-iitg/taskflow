@@ -185,6 +185,11 @@ function requireTask(id) {
   return task;
 }
 
+// "2026-10": the due date's month, or the month the task was added if it has no due date
+const monthKey = (t) => {
+  const d = new Date(t.dueDate || t.createdAt);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 const isOverdue = (t) => t.dueDate && t.status !== 'completed' && new Date(t.dueDate) < new Date();
 
 // Deleted tasks are removed for good after TRASH_RETENTION_DAYS
@@ -311,7 +316,7 @@ const api = {
   /* Tasks */
   async listTasks(params = {}) {
     await tasksReady;
-    const { search = '', status = '', priority = '', category = '', sort = 'newest' } = params;
+    const { search = '', status = '', priority = '', category = '', month = '', sort = 'newest' } = params;
     const q = search.trim().toLowerCase();
     let tasks = [...cache.values()].filter((t) => (status === 'deleted' ? t.deletedAt : !t.deletedAt));
     if (status === 'active') tasks = tasks.filter((t) => t.status !== 'completed');
@@ -319,6 +324,7 @@ const api = {
     else if (STATUSES.includes(status)) tasks = tasks.filter((t) => t.status === status);
     if (priority) tasks = tasks.filter((t) => t.priority === priority);
     if (category) tasks = tasks.filter((t) => t.category === category);
+    if (month) tasks = tasks.filter((t) => monthKey(t) === month);
     if (q) tasks = tasks.filter((t) => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
 
     const newest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
@@ -341,6 +347,12 @@ const api = {
       categories: [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
       defaultCategories: DEFAULT_CATEGORIES,
     };
+  },
+
+  async months() {
+    await tasksReady;
+    const set = new Set([...cache.values()].filter((t) => !t.deletedAt).map(monthKey));
+    return { months: [...set].sort() };
   },
 
   async stats() {

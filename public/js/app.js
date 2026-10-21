@@ -12,7 +12,7 @@
     defaultCategories: [],
     trashRetentionDays: 30,
     editingId: null,
-    filters: { search: '', status: '', priority: '', category: '', sort: 'newest' },
+    filters: { search: '', status: '', priority: '', category: '', month: '', sort: 'newest' },
   };
 
   const STATUS_LABELS = { pending: 'Pending', 'in-progress': 'In progress', completed: 'Completed' };
@@ -446,7 +446,7 @@
     const list = $('#task-list');
     list.setAttribute('aria-busy', 'true');
     $('#empty-state').hidden = true;
-    lastListHtml = '';
+    lastListHtml = null; // skeletons are showing, so the next render must always replace them
     list.innerHTML = Array.from({ length: n }, () => `
       <li class="task-card skeleton" aria-hidden="true">
         <span class="sk sk--check"></span>
@@ -463,10 +463,11 @@
     const seq = ++loadSeq;
     if (!silent) renderSkeletons();
     try {
-      const [filtered, all, cats, stats] = await Promise.all([
+      const [filtered, all, cats, months, stats] = await Promise.all([
         api.listTasks(state.filters),
         api.listTasks({}),
         api.categories(),
+        api.months(),
         api.stats(),
       ]);
       if (seq !== loadSeq) return; // a newer request superseded this one
@@ -476,6 +477,7 @@
       state.trashRetentionDays = stats.trashRetentionDays;
       state.defaultCategories = cats.defaultCategories || [];
       renderCategories(cats.categories);
+      renderMonths(months.months);
       renderTasks();
       renderStats();
       refreshDetail();
@@ -499,6 +501,21 @@
     select.value = current;
     state.categories = categories;
     filterSelects.category.refresh();
+  }
+
+  const monthLabel = (key) => {
+    const [y, m] = key.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  };
+
+  function renderMonths(months) {
+    const select = $('#filter-month');
+    const current = state.filters.month;
+    const keys = current && !months.includes(current) ? [...months, current].sort() : months;
+    select.innerHTML = '<option value="">All</option>' +
+      keys.map((k) => `<option value="${k}">${escapeHtml(monthLabel(k))}</option>`).join('');
+    select.value = current;
+    filterSelects.month.refresh();
   }
 
   function renderStats() {
@@ -1787,6 +1804,9 @@
         ? plainOpt(CATEGORY_ICONS[v.toLowerCase()] || CATEGORY_ICONS.custom, label, 'status-opt--cat')
         : plainOpt(FILTER_STATUS_ICONS[''], label, 'status-opt--all')),
     }),
+    month: enhanceSelect($('#filter-month'), {
+      optionHtml: (v, label) => plainOpt(v ? SORT_ICONS.due : FILTER_STATUS_ICONS[''], label, v ? 'status-opt--sort' : 'status-opt--all'),
+    }),
     sort: enhanceSelect($('#sort'), {
       optionHtml: (v, label) => plainOpt(SORT_ICONS[v] || '', label, 'status-opt--sort'),
     }),
@@ -2475,7 +2495,7 @@
   }, 300);
   $('#search').addEventListener('input', (e) => onSearch(e.target.value));
 
-  [['#filter-status', 'status'], ['#filter-priority', 'priority'], ['#filter-category', 'category'], ['#sort', 'sort']]
+  [['#filter-status', 'status'], ['#filter-priority', 'priority'], ['#filter-category', 'category'], ['#filter-month', 'month'], ['#sort', 'sort']]
     .forEach(([sel, key]) => {
       $(sel).addEventListener('change', (e) => {
         state.filters[key] = e.target.value;

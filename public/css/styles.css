@@ -2010,3 +2010,37 @@ input[type="date"], input[type="time"] {
     color-mix(in srgb, var(--surface) 88%, transparent);
   border-bottom-color: color-mix(in srgb, var(--primary) 40%, var(--border));
 }
+
+/* Filters: Status, Priority, Category, Month, Sort */
+/* Columns follow the toolbar's own width, so labels like "Newest first" never get cut off */
+.toolbar { container-type: inline-size; }
+.toolbar .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.toolbar .filters > :last-child { grid-column: 1 / -1; }
+@container (min-width: 440px) {
+  .toolbar .filters { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .toolbar .filters > * { grid-column: span 2; }
+  .toolbar .filters > :nth-child(n + 4) { grid-column: span 3; }
+}
+@container (min-width: 700px) {
+  .toolbar .filters { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .toolbar .filters > *, .toolbar .filters > :nth-child(n + 4) { grid-column: auto; }
+}
+.select__content .status-opt { min-width: 0; }
+.select__content .status-opt > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar .select__trigger { padding-inline: 0.6rem 0.45rem; gap: 0.3rem; }
+
+/* Phones: the name gets its own line and stays on one line */
+@media (max-width: 600px) {
+  #greeting > span:last-child { min-width: 0; }
+  .greeting__name {
+    display: block;
+    font-size: min(1em, 5.6vw);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+
+/* Phones: Log out becomes an icon button so the top bar fits */
+@media (max-width: 600px) {
+  .logout-btn { width: 38px; padding: 0; justify-content: center; margin-left: 0; }
+  .logout-btn__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
