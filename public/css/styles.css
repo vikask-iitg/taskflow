@@ -2515,11 +2515,11 @@ input[type="date"], input[type="time"] {
     flex-direction: column; justify-content: center; gap: 0.35rem;
     min-width: 170px; padding: 0.9rem 1.2rem;
     border-radius: 18px;
-    background: linear-gradient(140deg, #6366f1 0%, #7c3aed 60%, #9333ea 100%);
-    box-shadow: 0 12px 28px -16px rgb(79 70 229 / 0.8);
+    background: linear-gradient(140deg, #818cf8 0%, #8b5cf6 60%, #a855f7 100%);
+    box-shadow: 0 12px 28px -18px rgb(99 102 241 / 0.6);
     transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
   }
-  .hero #new-task-btn:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 16px 32px -16px rgb(79 70 229 / 0.9); }
+  .hero #new-task-btn:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: 0 16px 32px -18px rgb(99 102 241 / 0.7); }
   .new-task__plus {
     display: grid; place-items: center;
     width: 38px; height: 38px; border-radius: 12px;
