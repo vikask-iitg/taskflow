@@ -330,6 +330,9 @@ input[type="date"], input[type="time"] {
   /* Hairline divider that fades out at both ends */
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 30%, var(--border)), transparent) bottom / 100% 1px no-repeat;
 }
+/* Logo centered in the card; theme toggle pinned to the top-right corner of the page */
+.auth-card__head { justify-content: center; }
+.auth-card__head .mode-toggle { position: fixed; top: 16px; right: 16px; z-index: 10; }
 .auth-card__head .brand { gap: 0.6rem; font-size: 1.12rem; letter-spacing: -0.01em; }
 .auth-card__head .brand__logo {
   width: 34px; height: 34px; border-radius: 10px;

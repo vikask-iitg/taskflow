@@ -1,12 +1,12 @@
 const crypto = require('crypto');
-const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const requireFirebaseUser = require('../middleware/firebaseAuth');
 const storage = require('../lib/attachmentStorage');
 
 const MAX_ATTACHMENTS = 10;
-const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+// Vercel functions accept request bodies up to 4.5 MB, so the limit is lower there
+const MAX_ATTACHMENT_BYTES = (process.env.VERCEL ? 4 : 10) * 1024 * 1024;
 // Types the browser may display inline. Anything else (HTML, SVG, scripts…) is always a download.
 const INLINE_SAFE = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf', 'text/plain']);
 
@@ -24,13 +24,8 @@ router.post('/:taskId', async (req, res, next) => {
     const remaining = MAX_ATTACHMENTS - Object.keys(index).length;
     if (remaining <= 0) return res.status(400).json({ message: `A task can have at most ${MAX_ATTACHMENTS} attachments` });
 
-    const dir = storage.taskDir(req.uid, taskId);
-    await fs.promises.mkdir(dir, { recursive: true });
     const upload = multer({
-      storage: multer.diskStorage({
-        destination: dir,
-        filename: (r, file, cb) => cb(null, crypto.randomBytes(16).toString('hex')),
-      }),
+      storage: multer.memoryStorage(),
       limits: { fileSize: MAX_ATTACHMENT_BYTES, files: remaining },
       defParamCharset: 'utf8',
     }).array('files');
@@ -46,15 +41,22 @@ router.post('/:taskId', async (req, res, next) => {
       if (err) return next(err);
       if (!req.files?.length) return res.status(400).json({ message: 'No files received' });
 
-      const uploadedAt = new Date().toISOString();
-      const added = req.files.map((f) => {
-        const id = crypto.randomBytes(12).toString('hex');
-        const meta = { originalName: f.originalname.slice(0, 255) || 'file', mimeType: (f.mimetype || 'application/octet-stream').slice(0, 150), size: f.size, uploadedAt };
-        index[id] = { ...meta, storedName: f.filename };
-        return { _id: id, ...meta };
-      });
-      await storage.writeIndex(req.uid, taskId, index);
-      res.status(201).json({ attachments: added });
+      try {
+        const uploadedAt = new Date().toISOString();
+        const added = [];
+        for (const f of req.files) {
+          const id = crypto.randomBytes(12).toString('hex');
+          const storedName = crypto.randomBytes(16).toString('hex');
+          const meta = { originalName: f.originalname.slice(0, 255) || 'file', mimeType: (f.mimetype || 'application/octet-stream').slice(0, 150), size: f.size, uploadedAt };
+          await storage.saveFile(req.uid, taskId, storedName, f.buffer, meta.mimeType);
+          index[id] = { ...meta, storedName };
+          added.push({ _id: id, ...meta });
+        }
+        await storage.writeIndex(req.uid, taskId, index);
+        res.status(201).json({ attachments: added });
+      } catch (e) {
+        next(e);
+      }
     });
   } catch (err) {
     next(err);
@@ -76,9 +78,12 @@ router.get('/:taskId/:attId', async (req, res, next) => {
       'Content-Security-Policy': "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'",
       'Cache-Control': 'private, no-store',
     });
-    res.sendFile(storage.filePath(req.uid, taskId, att.storedName), { dotfiles: 'allow' }, (err) => {
-      if (err && !res.headersSent) res.status(404).json({ message: 'File is missing' });
-    });
+    const stream = await storage.openFile(req.uid, taskId, att.storedName);
+    if (!stream) {
+      res.removeHeader('Content-Disposition');
+      return res.status(404).json({ message: 'File is missing' });
+    }
+    stream.on('error', next).pipe(res);
   } catch (err) {
     next(err);
   }
@@ -93,7 +98,7 @@ router.delete('/:taskId/:attId', async (req, res, next) => {
     if (!att) return res.status(404).json({ message: 'Attachment not found' });
     delete index[attId];
     await storage.writeIndex(req.uid, taskId, index);
-    await fs.promises.rm(storage.filePath(req.uid, taskId, att.storedName), { force: true });
+    await storage.removeFile(req.uid, taskId, att.storedName);
     res.status(204).end();
   } catch (err) {
     next(err);
