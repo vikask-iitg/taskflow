@@ -84,6 +84,8 @@
     return url.slice(0, end);
   }
 
+  const COPY_LABEL = `${COPY_ICON}<span>Copy</span>`;
+
   // Escapes the text and turns http(s):// and www. URLs into safe links with a copy button
   function linkify(text) {
     let html = '';
@@ -94,7 +96,7 @@
       const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
       html += escapeHtml(text.slice(last, match.index));
       html += `<span class="link-wrap"><a class="desc-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="Open ${escapeHtml(href)} in a new tab">${escapeHtml(url)}</a>`
-        + `<button type="button" class="link-copy" data-copy-url="${escapeHtml(href)}" aria-label="Copy link ${escapeHtml(url)}" title="Copy link">${COPY_ICON}</button></span>`;
+        + `<button type="button" class="link-copy" data-copy-url="${escapeHtml(href)}" aria-label="Copy link ${escapeHtml(url)}" title="Copy link">${COPY_LABEL}</button></span>`;
       last = match.index + url.length;
     }
     return html + escapeHtml(text.slice(last));
@@ -123,10 +125,10 @@
     e.stopPropagation();
     try {
       await copyText(btn.dataset.copyUrl);
-      btn.innerHTML = CHECK_ICON;
+      btn.innerHTML = `${CHECK_ICON}<span>Copied</span>`;
       btn.classList.add('is-copied');
       toast('Link copied to clipboard', 'success');
-      setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove('is-copied'); }, 1500);
+      setTimeout(() => { btn.innerHTML = COPY_LABEL; btn.classList.remove('is-copied'); }, 1500);
     } catch {
       toast('Could not copy the link', 'error');
     }

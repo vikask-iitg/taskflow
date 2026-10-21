@@ -2380,3 +2380,21 @@ input[type="date"], input[type="time"] {
 .detail .detail__row .badge, .detail .detail__cat { font-size: 0.7rem; padding: 0.1rem 0.45rem; }
 .detail .detail__row .status-trigger { height: 26px; }
 .detail .detail__row .status-trigger .status-opt { font-size: 0.72rem; }
+
+/* Copy-link button: small purple pill with a label */
+.link-copy.link-copy {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  width: auto; height: 22px;
+  margin-left: 0.35rem; padding: 0 0.5rem 0 0.4rem;
+  vertical-align: 0.05em;
+  font: inherit; font-size: 0.68rem; font-weight: 700; line-height: 1;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  border-radius: 999px;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.link-copy.link-copy svg { width: 12px; height: 12px; flex-shrink: 0; }
+.link-copy.link-copy:hover { color: var(--primary-contrast); background: var(--primary); border-color: var(--primary); }
+.link-copy.link-copy:active { transform: scale(0.95); }
+.link-copy.link-copy.is-copied { color: var(--low-fg); background: var(--low-bg); border-color: color-mix(in srgb, var(--low-dot) 35%, transparent); }
