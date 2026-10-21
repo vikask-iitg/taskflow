@@ -2179,3 +2179,25 @@ input[type="date"], input[type="time"] {
 @media (max-width: 360px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Phones: compact Today card, clock and progress side by side */
+@media (max-width: 600px) {
+  .today.side-card {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-areas: "head head" "now main" "add add";
+    column-gap: 0.6rem;
+    padding: 0.75rem;
+  }
+  .today > .side-card__header { grid-area: head; }
+  .today .today__now { grid-area: now; margin-top: 0.45rem; padding: 0.55rem 0.4rem; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+  .today .today__time { font-size: 1.35rem; }
+  .today .today__ampm { font-size: 0.6rem; margin-top: 0.1rem; }
+  .today .today__day { margin-top: 0.4rem; padding-top: 0.35rem; min-width: 70px; font-size: 0.6rem; letter-spacing: 0.12em; }
+  .today .today__fulldate { margin-top: 0.15rem; font-size: 0.78rem; }
+  .today .today__main { grid-area: main; margin: 0.45rem 0 0; gap: 0.55rem; align-self: center; }
+  .today .ring { width: 48px; height: 48px; }
+  .today .ring__label { font-size: 0.72rem; }
+  .today .today__count { font-size: 0.8rem; }
+  .today .today__msg { font-size: 0.7rem; }
+  .today .today__add { grid-area: add; margin: 0.6rem 0 0; padding: 0.4rem; font-size: 0.78rem; }
+}
