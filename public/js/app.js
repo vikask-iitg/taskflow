@@ -2530,6 +2530,18 @@
     $('#search').focus();
   });
 
+  // Phones: Upcoming is collapsed to its header; tapping the header opens it
+  const remindersToggle = $('#reminders-toggle');
+  function setRemindersOpen(open) {
+    $('#reminders').classList.toggle('is-open', open);
+    remindersToggle.setAttribute('aria-expanded', String(open));
+    remindersToggle.setAttribute('aria-label', `${open ? 'Hide' : 'Show'} upcoming tasks`);
+  }
+  $('#reminders .reminders__header').addEventListener('click', () => {
+    if (getComputedStyle(remindersToggle).display === 'none') return; // desktop: always open
+    setRemindersOpen(!$('#reminders').classList.contains('is-open'));
+  });
+
   // Stat cards act as quick status filters and mirror the Status dropdown
   function syncStatButtons() {
     $$('.stat[data-filter]').forEach((b) => {
