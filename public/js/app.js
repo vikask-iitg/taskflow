@@ -1014,9 +1014,14 @@
   const detailDialog = $('#detail-dialog');
   let detailId = null;
 
-  const fmtFull = (iso) => new Intl.DateTimeFormat(undefined, {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
-  }).format(new Date(iso));
+  // Details popup: date in bold with the time in a small chip
+  const fmtStamp = (iso) => {
+    const d = new Date(iso);
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+    const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) }).format(d);
+    const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(d);
+    return `<span class="detail__when"><span class="detail__date">${escapeHtml(day)}</span><span class="detail__clock">${escapeHtml(time)}</span></span>`;
+  };
 
   function timeAgo(iso) {
     const mins = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -1068,7 +1073,7 @@
     let due = '<span class="muted">No due date</span>';
     let dueSub = '';
     if (t.dueDate) {
-      due = escapeHtml(fmtFull(t.dueDate));
+      due = fmtStamp(t.dueDate);
       // Countdown pill: red when overdue, amber within 24 hours, otherwise purple
       const soon = new Date(t.dueDate) - Date.now() < 86400000;
       const tone = overdue ? 'overdue' : soon ? 'soon' : 'later';
@@ -1126,9 +1131,9 @@
         ${detailRow('priority', 'Priority', `<span class="badge badge--${t.priority}">${PRIORITY_LABELS[t.priority]}</span>`)}
         ${detailRow('category', 'Category', t.category ? `<span class="detail__cat detail__cat--plain">${catIcon}${escapeHtml(t.category)}</span>` : '<span class="muted">None</span>')}
         ${detailRow('due', 'Due', due, dueSub)}
-        ${detailRow('created', 'Created', escapeHtml(fmtFull(t.createdAt)), escapeHtml(timeAgo(t.createdAt)))}
-        ${detailRow('updated', 'Last updated', escapeHtml(fmtFull(t.updatedAt)), escapeHtml(timeAgo(t.updatedAt)))}
-        ${deleted ? detailRow('deleted', 'Deleted', escapeHtml(fmtFull(t.deletedAt)), escapeHtml(timeAgo(t.deletedAt))) : ''}
+        ${detailRow('created', 'Created', fmtStamp(t.createdAt), escapeHtml(timeAgo(t.createdAt)))}
+        ${detailRow('updated', 'Last updated', fmtStamp(t.updatedAt), escapeHtml(timeAgo(t.updatedAt)))}
+        ${deleted ? detailRow('deleted', 'Deleted', fmtStamp(t.deletedAt), escapeHtml(timeAgo(t.deletedAt))) : ''}
       </dl>
 
       <footer class="detail__footer">${footer}</footer>`;
