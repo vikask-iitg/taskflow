@@ -1993,3 +1993,12 @@ input[type="date"], input[type="time"] {
   color: transparent;
 }
 :root[data-theme="dark"] .greeting__name { background-image: linear-gradient(135deg, #a5b4fc, #c4b5fd); }
+
+/* Top bar content lines up with the centred page container */
+.topbar {
+  --bar-gutter: clamp(1rem, 4vw, 2rem);
+  padding-inline: max(var(--bar-gutter), calc((100% - 1240px) / 2 + var(--bar-gutter)));
+}
+@media (min-width: 1200px) {
+  .topbar { padding-inline: max(var(--bar-gutter), calc((100% - 1440px) / 2 + var(--bar-gutter))); }
+}
