@@ -1956,3 +1956,40 @@ input[type="date"], input[type="time"] {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Task details: the description is the focus, the other fields are a compact secondary panel */
+.detail .detail__desc {
+  font-size: 1rem; line-height: 1.6; color: var(--text);
+  padding: 0.9rem 1rem 0.9rem 1.15rem;
+  min-height: 4.5rem; max-height: 45vh;
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface-2));
+}
+.detail .detail__desc::before { top: 0.6rem; bottom: 0.6rem; width: 4px; background: var(--primary); }
+.detail .detail__desc.muted { color: var(--text-muted); font-style: italic; }
+.detail .detail__label--info { margin: 0.2rem 0 -0.45rem; }
+.detail .detail__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.15rem 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.detail .detail__row { border: 0; background: transparent; padding: 0.4rem 0.35rem; gap: 0.45rem; }
+.detail .detail__row-icon { width: 20px; height: 20px; border-radius: 6px; }
+.detail .detail__row-icon svg { width: 12px; height: 12px; }
+.detail .detail__row dt { font-size: 0.62rem; }
+.detail .detail__row dd { font-size: 0.78rem; color: var(--text-muted); }
+.detail .detail__sub { font-size: 0.7rem; }
+.detail .detail__row .badge, .detail .detail__cat--plain { font-size: 0.72rem; }
+.detail .status-trigger { height: 28px; min-width: 0; max-width: 100%; font-size: 0.78rem; padding-inline: 0.5rem; }
+@media (max-width: 560px) {
+  .detail .detail__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Greeting: the user's name in brand purple */
+.greeting__name {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+:root[data-theme="dark"] .greeting__name { background-image: linear-gradient(135deg, #a5b4fc, #c4b5fd); }

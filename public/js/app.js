@@ -360,12 +360,8 @@
     const part = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
     // After midnight it is still "Good Morning", but a moon fits the hour better than a sunrise
     const icon = hour < 5 ? 'Evening' : part;
-    // "VIKAS KUMAR" -> "Vikas Kumar" for a friendlier greeting; mixed-case names are left as typed
-    const full = state.user.name.trim().replace(/\s+/g, ' ');
-    const friendly = full === full.toUpperCase()
-      ? full.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, sep, ch) => sep + ch.toUpperCase())
-      : full;
-    $('#greeting').innerHTML = `<span class="greeting__icon greeting__icon--${icon.toLowerCase()}" aria-hidden="true">${GREETING_ICONS[icon]}</span><span>Good ${part}, ${escapeHtml(friendly)}</span>`;
+    const name = state.user.name.trim().replace(/\s+/g, ' ').toUpperCase();
+    $('#greeting').innerHTML = `<span class="greeting__icon greeting__icon--${icon.toLowerCase()}" aria-hidden="true">${GREETING_ICONS[icon]}</span><span>Good ${part}, <span class="greeting__name">${escapeHtml(name)}</span></span>`;
   }
 
   function logout(message) {
@@ -1053,8 +1049,8 @@
          <button type="button" class="btn btn--primary" data-detail-action="restore">${ICONS.undo}<span>Restore</span></button>`
       : `<button type="button" class="btn btn--danger-outline" data-detail-action="delete">${ICONS.trash}<span>Delete</span></button>
          <span class="detail__spacer"></span>
-         <button type="button" class="btn ${done ? 'btn--outline' : 'btn--success'}" data-detail-action="toggle">${done ? `${ICONS.undo}<span>Mark as pending</span>` : `${ICONS.check}<span>Mark complete</span>`}</button>
-         <button type="button" class="btn btn--primary" data-detail-action="edit">${ICONS.edit}<span>Edit</span></button>`;
+         <button type="button" class="btn btn--primary" data-detail-action="edit">${ICONS.edit}<span>Edit</span></button>
+         <button type="button" class="btn ${done ? 'btn--outline' : 'btn--success'}" data-detail-action="toggle">${done ? `${ICONS.undo}<span>Mark as pending</span>` : `${ICONS.check}<span>Mark complete</span>`}</button>`;
 
     $('#detail-content').className = `detail detail--${t.priority}${done ? ' is-completed' : ''}${overdue ? ' is-overdue' : ''}`;
     $('#detail-content').innerHTML = `
@@ -1087,6 +1083,7 @@
         <ul class="att-list att-list--detail">${t.attachments.map(attDetailItemHtml).join('')}</ul>
       </section>` : ''}
 
+      <h3 class="detail__label detail__label--info">Details</h3>
       <dl class="detail__grid">
         ${detailRow('status', 'Status', statusControl)}
         ${detailRow('priority', 'Priority', `<span class="badge badge--${t.priority}">${PRIORITY_LABELS[t.priority]}</span>`)}
