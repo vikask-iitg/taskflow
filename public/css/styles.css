@@ -2356,9 +2356,6 @@ input[type="date"], input[type="time"] {
 .detail .detail__row .status-trigger .status-opt svg { width: 13px; height: 13px; }
 .detail .detail__row .status-trigger .select__chevron { width: 13px; height: 13px; }
 
-/* Task details footer: every button gets the same soft shadow, tinted to its colour */
-.detail .detail__footer .btn { box-shadow: 0 6px 14px -8px var(--btn-shadow, rgb(15 23 42 / 0.35)); }
-.detail .detail__footer .btn:hover:not(:disabled) { box-shadow: 0 9px 18px -9px var(--btn-shadow, rgb(15 23 42 / 0.4)); }
-.detail .detail__footer .btn--danger-outline, .detail .detail__footer [data-detail-action="delete-forever"] { --btn-shadow: rgb(220 38 38 / 0.45); }
-.detail .detail__footer [data-detail-action="edit"], .detail .detail__footer [data-detail-action="restore"] { --btn-shadow: rgb(79 70 229 / 0.5); }
-.detail .detail__footer .btn--success { --btn-shadow: rgb(22 163 74 / 0.6); }
+/* Task details footer: flat buttons, no shadows */
+.detail .detail__footer .btn,
+.detail .detail__footer .btn:hover:not(:disabled) { box-shadow: none; }
