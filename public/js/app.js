@@ -354,6 +354,8 @@
     Evening: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>',
   };
 
+  const SUMMARY_CALENDAR = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+
   // Re-run every minute so the greeting follows the clock while the tab stays open
   function renderGreeting() {
     if (!state.user) return;
@@ -362,7 +364,8 @@
     // After midnight it is still "Good Morning", but a moon fits the hour better than a sunrise
     const icon = hour < 5 ? 'Evening' : part;
     const name = state.user.name.trim().replace(/\s+/g, ' ').toUpperCase();
-    $('#greeting').innerHTML = `<span class="greeting__icon greeting__icon--${icon.toLowerCase()}" aria-hidden="true">${GREETING_ICONS[icon]}</span><span>Good ${part}, <span class="greeting__name">${escapeHtml(name)}</span></span>`;
+    $('#greeting').innerHTML = `<span class="greeting__icon greeting__icon--${icon.toLowerCase()}" aria-hidden="true">${GREETING_ICONS[icon]}</span>
+      <span class="greeting__text"><span class="greeting__hello">Good ${part}</span> <span class="greeting__name">${escapeHtml(name)}</span></span>`;
   }
 
   function logout(message) {
@@ -532,9 +535,10 @@
 
     const active = all.length - count('completed');
     const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
-    $('#summary').textContent = all.length
-      ? `${today} · ${active} active task${active === 1 ? '' : 's'}${overdue ? ` · ${overdue} overdue` : ''}`
-      : `${today} · No tasks yet. Create your first one!`;
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+    $('#summary').innerHTML = `<span class="summary__date">${SUMMARY_CALENDAR}${escapeHtml(today)}</span>` + (all.length
+      ? `<span class="summary__pill">${plural(active, 'active task')}</span>${overdue ? `<span class="summary__pill summary__pill--danger">${overdue} overdue</span>` : ''}`
+      : '<span class="summary__pill">No tasks yet. Create your first one!</span>');
 
     renderReminders();
     renderToday();
