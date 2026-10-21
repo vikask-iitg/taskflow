@@ -243,13 +243,20 @@
           <div class="today__main">
             <div class="ring" id="today-ring" role="img" aria-label="">
               <svg viewBox="0 0 64 64" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ring-gradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#6366f1" />
+                    <stop offset="1" stop-color="#a855f7" />
+                  </linearGradient>
+                </defs>
                 <circle class="ring__track" cx="32" cy="32" r="27" />
                 <circle class="ring__value" id="today-ring-value" cx="32" cy="32" r="27" />
               </svg>
-              <span class="ring__label" id="today-pct">0%</span>
+              <span class="ring__label"><span id="today-pct">0%</span><small class="ring__caption">done</small></span>
             </div>
             <div class="today__text">
               <p class="today__count" id="today-count"></p>
+              <p class="today__pills" id="today-pills"></p>
               <p class="today__msg" id="today-msg"></p>
             </div>
           </div>

@@ -688,6 +688,10 @@
     else if (leftToday) msg = `${leftToday} task${leftToday === 1 ? '' : 's'} left. You've got this.`;
     else msg = doneToday ? 'Keep the momentum going.' : 'Plan ahead or enjoy the calm ✨';
     $('#today-msg').textContent = msg;
+    $('#today-pills').innerHTML = total
+      ? `<span class="today__pill today__pill--done">✓ ${doneToday} done</span><span class="today__pill today__pill--left">${leftToday} left</span>`
+      : '';
+    $('#today-pills').hidden = !total;
     syncTodayAdd(endOfToday);
   }
 
