@@ -204,11 +204,11 @@
 
 
       <section class="stats layout__stats" aria-label="Task statistics. Select one to filter the list">
-        <button type="button" class="stat stat--today" data-filter="today" aria-pressed="false">
+        <button type="button" class="stat stat--today" data-filter="today" aria-pressed="true">
           <span class="stat__top"><span class="stat__label">Today's Tasks</span><span class="stat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg></span></span>
           <span class="stat__num" id="stat-today">0</span>
         </button>
-        <button type="button" class="stat stat--total" data-filter="" aria-pressed="true">
+        <button type="button" class="stat stat--total" data-filter="" aria-pressed="false">
           <span class="stat__top"><span class="stat__label">Total</span><span class="stat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span></span>
           <span class="stat__num" id="stat-total">0</span>
         </button>
@@ -303,7 +303,7 @@
             <select id="filter-status">
               <option value="">All</option>
               <option value="active">Active</option>
-              <option value="today">Due today</option>
+              <option value="today" selected>Due today</option>
               <option value="pending">Pending</option>
               <option value="in-progress">In progress</option>
               <option value="completed">Completed</option>

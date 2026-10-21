@@ -12,7 +12,8 @@
     defaultCategories: [],
     trashRetentionDays: 30,
     editingId: null,
-    filters: { search: '', status: '', priority: '', category: '', month: '', sort: 'newest' },
+    // The list opens on today's tasks; the Total card shows everything
+    filters: { search: '', status: 'today', priority: '', category: '', month: '', sort: 'newest' },
   };
 
   const STATUS_LABELS = { pending: 'Pending', 'in-progress': 'In progress', completed: 'Completed' };
@@ -860,7 +861,7 @@
     if (restore) $(`.task-card[data-id="${restore.id}"] [data-action="${restore.action}"]`, list)?.focus();
 
     const inTrash = state.filters.status === 'deleted';
-    $('#clear-filters').hidden = !Object.entries(state.filters).some(([k, v]) => k !== 'sort' && v);
+    $('#clear-filters').hidden = !Object.entries(state.filters).some(([k, v]) => (k === 'status' ? v !== 'today' : k !== 'sort' && v));
     $('#trash-banner').hidden = !inTrash;
     $('#trash-days').textContent = state.trashRetentionDays;
     $('#empty-trash-btn').disabled = !state.deletedCount;
@@ -2513,10 +2514,10 @@
     });
 
   $('#clear-filters').addEventListener('click', () => {
-    Object.assign(state.filters, { search: '', status: '', priority: '', category: '', month: '' });
+    Object.assign(state.filters, { search: '', status: 'today', priority: '', category: '', month: '' });
     $('#search').value = '';
     ['status', 'priority', 'category', 'month'].forEach((key) => {
-      $(`#filter-${key}`).value = '';
+      $(`#filter-${key}`).value = state.filters[key];
       filterSelects[key].refresh();
     });
     syncStatButtons();
