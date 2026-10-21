@@ -2361,3 +2361,8 @@ input[type="date"], input[type="time"] {
 .detail .detail__footer .btn:hover:not(:disabled) { box-shadow: none; }
 .detail .detail__footer .btn--danger-outline { border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
 .detail .detail__footer .btn--danger-outline:hover { border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+
+/* Task details: the whole popup scrolls when the content is taller than the screen */
+.dialog--detail { max-height: calc(100dvh - 2rem); display: flex; flex-direction: column; }
+.dialog--detail .detail { min-height: 0; max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
+.detail .detail__desc { max-height: none; overflow: visible; }
