@@ -184,9 +184,9 @@
 
   /* ---------------- Theme ---------------- */
 
+  // Light unless the user switched to dark (the OS appearance setting is not used)
   function currentTheme() {
-    return document.documentElement.dataset.theme ||
-      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   }
 
   function toggleTheme() {
@@ -2542,7 +2542,6 @@
   /* ---------------- Init ---------------- */
 
   $$('[data-action="toggle-theme"]').forEach((b) => b.addEventListener('click', toggleTheme));
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeButtons);
   syncThemeButtons();
 
   // Re-evaluate overdue state and the greeting every minute without refetching

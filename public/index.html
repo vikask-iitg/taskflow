@@ -7,11 +7,12 @@
   <title>TaskFlow</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>" />
   <script>
-    // Apply saved theme before paint to avoid a flash
+    // Light by default; dark only if the user picked it with the toggle. Applied before paint to avoid a flash.
+    let theme = 'light';
     try {
-      const t = localStorage.getItem('taskflow-theme');
-      if (t) document.documentElement.dataset.theme = t;
+      if (localStorage.getItem('taskflow-theme') === 'dark') theme = 'dark';
     } catch {}
+    document.documentElement.dataset.theme = theme;
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
