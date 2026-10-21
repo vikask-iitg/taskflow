@@ -536,7 +536,8 @@
     const active = all.length - count('completed');
     const today = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
     const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-    $('#summary').innerHTML = `<span class="summary__date">${SUMMARY_CALENDAR}${escapeHtml(today)}</span>` + (all.length
+    const todayShort = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date());
+    $('#summary').innerHTML = `<span class="summary__date">${SUMMARY_CALENDAR}<span class="summary__long">${escapeHtml(today)}</span><span class="summary__short">${escapeHtml(todayShort)}</span></span>` + (all.length
       ? `<span class="summary__pill">${plural(active, 'active task')}</span>${overdue ? `<span class="summary__pill summary__pill--danger">${overdue} overdue</span>` : ''}`
       : '<span class="summary__pill">No tasks yet. Create your first one!</span>');
 
