@@ -2282,9 +2282,20 @@ input[type="date"], input[type="time"] {
 .detail .detail__row .status-trigger .status-opt { gap: 0.3rem; font-size: 0.78rem; }
 .detail .detail__row .status-trigger .status-opt > span { white-space: nowrap; }
 .detail .detail__row .status-trigger .select__chevron { width: 14px; height: 14px; }
+/* Every tile the same size: equal columns and rows, icon in line with the label */
+.detail .detail__grid { grid-auto-rows: 1fr; }
 @media (min-width: 561px) {
-  .detail .detail__grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .detail .detail__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+.detail .detail__row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start;
+  column-gap: 0.45rem; row-gap: 0.4rem;
+}
+.detail .detail__row-body { display: contents; }
+.detail .detail__row-icon { grid-column: 1; grid-row: 1; width: 22px; height: 22px; border-radius: 6px; }
+.detail .detail__row-icon svg { width: 12px; height: 12px; }
+.detail .detail__row dt { grid-column: 2; grid-row: 1; align-self: center; }
+.detail .detail__row dd { grid-column: 1 / -1; grid-row: 2; }
 
 /* Phones: no Quick note; Upcoming folds into a dropdown */
 .reminders__toggle { display: none; }
@@ -2340,3 +2351,14 @@ input[type="date"], input[type="time"] {
   .today__pill { font-size: 0.62rem; padding: 0.05rem 0.4rem; }
   .today .today__msg { display: none; } /* the pills say the same thing in less space */
 }
+.detail .detail__row .status-trigger { height: 28px; padding: 0 0.3rem 0 0.4rem; border-radius: 7px; }
+.detail .detail__row .status-trigger .status-opt { font-size: 0.74rem; gap: 0.25rem; }
+.detail .detail__row .status-trigger .status-opt svg { width: 13px; height: 13px; }
+.detail .detail__row .status-trigger .select__chevron { width: 13px; height: 13px; }
+
+/* Task details footer: every button gets the same soft shadow, tinted to its colour */
+.detail .detail__footer .btn { box-shadow: 0 6px 14px -8px var(--btn-shadow, rgb(15 23 42 / 0.35)); }
+.detail .detail__footer .btn:hover:not(:disabled) { box-shadow: 0 9px 18px -9px var(--btn-shadow, rgb(15 23 42 / 0.4)); }
+.detail .detail__footer .btn--danger-outline, .detail .detail__footer [data-detail-action="delete-forever"] { --btn-shadow: rgb(220 38 38 / 0.45); }
+.detail .detail__footer [data-detail-action="edit"], .detail .detail__footer [data-detail-action="restore"] { --btn-shadow: rgb(79 70 229 / 0.5); }
+.detail .detail__footer .btn--success { --btn-shadow: rgb(22 163 74 / 0.6); }
