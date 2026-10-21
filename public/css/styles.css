@@ -2359,3 +2359,5 @@ input[type="date"], input[type="time"] {
 /* Task details footer: flat buttons, no shadows */
 .detail .detail__footer .btn,
 .detail .detail__footer .btn:hover:not(:disabled) { box-shadow: none; }
+.detail .detail__footer .btn--danger-outline { border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
+.detail .detail__footer .btn--danger-outline:hover { border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
