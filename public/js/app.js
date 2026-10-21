@@ -859,6 +859,7 @@
     if (restore) $(`.task-card[data-id="${restore.id}"] [data-action="${restore.action}"]`, list)?.focus();
 
     const inTrash = state.filters.status === 'deleted';
+    $('#clear-filters').hidden = !Object.entries(state.filters).some(([k, v]) => k !== 'sort' && v);
     $('#trash-banner').hidden = !inTrash;
     $('#trash-days').textContent = state.trashRetentionDays;
     $('#empty-trash-btn').disabled = !state.deletedCount;
@@ -2507,6 +2508,18 @@
         loadTasks();
       });
     });
+
+  $('#clear-filters').addEventListener('click', () => {
+    Object.assign(state.filters, { search: '', status: '', priority: '', category: '', month: '' });
+    $('#search').value = '';
+    ['status', 'priority', 'category', 'month'].forEach((key) => {
+      $(`#filter-${key}`).value = '';
+      filterSelects[key].refresh();
+    });
+    syncStatButtons();
+    loadTasks();
+    $('#search').focus();
+  });
 
   // Stat cards act as quick status filters and mirror the Status dropdown
   function syncStatButtons() {
