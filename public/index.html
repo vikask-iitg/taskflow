@@ -61,6 +61,43 @@
         <button type="submit" class="btn btn--primary btn--block">Log in</button>
       </form>
 
+      <div class="auth-alt">
+        <div class="auth-alt__divider"><span>or continue with</span></div>
+        <div class="auth-alt__buttons">
+          <button type="button" class="btn auth-alt__btn" id="google-btn"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.78.43 3.45 1.18 4.94l3.66-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.95 10.95 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z"/></svg><span>Google</span></button>
+          <button type="button" class="btn auth-alt__btn" id="phone-btn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg><span>Phone</span></button>
+        </div>
+      </div>
+
+      <form id="phone-form" class="form auth-panel" hidden novalidate aria-labelledby="phone-title">
+        <div class="auth-panel__head">
+          <span class="auth-panel__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg></span>
+          <h2 id="phone-title">Sign in with your phone</h2>
+          <p class="muted">We’ll text you a 6-digit code to confirm it’s you.</p>
+        </div>
+        <div id="phone-step-number">
+          <div class="field">
+            <label for="phone-number">Mobile number</label>
+            <input id="phone-number" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210" />
+            <small class="hint">Include the country code. Numbers without one are treated as Indian (+91).</small>
+          </div>
+        </div>
+        <div id="phone-step-code" hidden>
+          <p class="phone-sent">Code sent to <strong id="phone-sent-to"></strong> · <button type="button" class="link-btn" id="phone-change">Change</button></p>
+          <div class="field">
+            <label for="phone-code">6-digit code</label>
+            <input id="phone-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
+          </div>
+          <div class="field">
+            <label for="phone-name">Your name <span class="label-optional">(new accounts)</span></label>
+            <input id="phone-name" name="name" type="text" autocomplete="name" maxlength="60" />
+          </div>
+        </div>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn btn--primary btn--block" id="phone-submit" data-step="1">Send code</button>
+        <button type="button" class="link-btn auth-back" data-auth-back>← Back to log in</button>
+      </form>
+
       <form id="forgot-form" class="form auth-panel" hidden novalidate aria-labelledby="forgot-title">
         <div class="auth-panel__head">
           <span class="auth-panel__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
@@ -76,27 +113,6 @@
         <button type="submit" class="btn btn--primary btn--block">Send reset link</button>
         <button type="button" class="link-btn auth-back" data-auth-back>← Back to log in</button>
       </form>
-
-      <form id="reset-form" class="form auth-panel" hidden novalidate aria-labelledby="reset-title">
-        <div class="auth-panel__head">
-          <span class="auth-panel__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
-          <h2 id="reset-title">Set a new password</h2>
-          <p class="muted">Choose a new password for your TaskFlow account.</p>
-        </div>
-        <div class="field">
-          <label for="reset-password">New password</label>
-          <input id="reset-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
-          <small class="hint">At least 8 characters.</small>
-        </div>
-        <div class="field">
-          <label for="reset-confirm">Confirm new password</label>
-          <input id="reset-confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required />
-        </div>
-        <p class="form-error" role="alert"></p>
-        <button type="submit" class="btn btn--primary btn--block">Update password</button>
-        <button type="button" class="link-btn auth-back" data-auth-back>← Back to log in</button>
-      </form>
-
       <form id="register-form" class="form" role="tabpanel" aria-labelledby="tab-register" hidden novalidate>
         <div class="field">
           <label for="reg-name">Name</label>
@@ -524,8 +540,8 @@
 
   <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
 
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/app.js"></script>
   <script src="js/livereload.js"></script>
 </body>
 </html>

@@ -1,0 +1,203 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: the user's Firebase Auth uid
+// Fields:
+//   - name: string (required, 1-60 chars) - display name
+//   - note: string (required, 0-10000 chars) - the dashboard "Quick note"
+//   - noteUpdatedAt: timestamp | null (required) - set to request.time whenever note changes
+//   - createdAt: timestamp (required, immutable) - set to request.time on create
+//
+// Subcollection: users/{uid}/tasks
+// Document ID: auto-generated
+// Fields:
+//   - title: string (required, 1-200 chars)
+//   - description: string (required, 0-5000 chars)
+//   - status: string (required) - 'pending' | 'in-progress' | 'completed'
+//   - priority: string (required) - 'low' | 'medium' | 'high'
+//   - category: string (required, 0-50 chars)
+//   - dueDate: timestamp | null (required)
+//   - attachments: list (required, max 10) of maps
+//       { id: string 1-64, name: string 1-255, type: string 0-150,
+//         size: int 0..10485760, uploadedAt: timestamp }
+//   - completedAt: timestamp | null (required) - request.time when status becomes 'completed',
+//                  null whenever status is not 'completed'
+//   - deletedAt: timestamp | null (required) - request.time when moved to the trash, null when active
+//   - createdAt: timestamp (required, immutable) - request.time on create
+//   - updatedAt: timestamp (required) - request.time on every write
+//
+// Ownership is defined by the document path (users/{uid}/...), so there is no
+// separate owner field that could be tampered with.
+//
+// Queries used by the app:
+//   - get users/{uid}
+//   - listen to the whole users/{uid}/tasks collection (no where/orderBy)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // The signed-in user is the owner of /users/{userId}/...
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isStringBetween(value, minLen, maxLen) {
+      return value is string && value.size() >= minLen && value.size() <= maxLen;
+    }
+
+    function isTimestampOrNull(value) {
+      return value == null || value is timestamp;
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function fieldChanged(field) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([field]);
+    }
+
+    // ===============================================================
+    // Domain Validators (used by both create and update)
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['name', 'note', 'noteUpdatedAt', 'createdAt']) &&
+             hasRequiredFields(['name', 'note', 'noteUpdatedAt', 'createdAt']) &&
+             isStringBetween(data.name, 1, 60) &&
+             isStringBetween(data.note, 0, 10000) &&
+             isTimestampOrNull(data.noteUpdatedAt) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidAttachment(a) {
+      return a is map &&
+             a.keys().hasOnly(['id', 'name', 'type', 'size', 'uploadedAt']) &&
+             a.keys().hasAll(['id', 'name', 'type', 'size', 'uploadedAt']) &&
+             isStringBetween(a.id, 1, 64) &&
+             isStringBetween(a.name, 1, 255) &&
+             isStringBetween(a.type, 0, 150) &&
+             a.size is int && a.size >= 0 && a.size <= 10485760 &&
+             a.uploadedAt is timestamp;
+    }
+
+    // Rules can't loop, so each of the (at most 10) entries is checked explicitly
+    function isValidAttachmentList(list) {
+      return list is list && list.size() <= 10 &&
+             (list.size() < 1 || isValidAttachment(list[0])) &&
+             (list.size() < 2 || isValidAttachment(list[1])) &&
+             (list.size() < 3 || isValidAttachment(list[2])) &&
+             (list.size() < 4 || isValidAttachment(list[3])) &&
+             (list.size() < 5 || isValidAttachment(list[4])) &&
+             (list.size() < 6 || isValidAttachment(list[5])) &&
+             (list.size() < 7 || isValidAttachment(list[6])) &&
+             (list.size() < 8 || isValidAttachment(list[7])) &&
+             (list.size() < 9 || isValidAttachment(list[8])) &&
+             (list.size() < 10 || isValidAttachment(list[9]));
+    }
+
+    function isValidTask(data) {
+      let fields = ['title', 'description', 'status', 'priority', 'category', 'dueDate',
+                    'attachments', 'completedAt', 'deletedAt', 'createdAt', 'updatedAt'];
+      return hasOnlyAllowedFields(fields) &&
+             hasRequiredFields(fields) &&
+             isStringBetween(data.title, 1, 200) &&
+             isStringBetween(data.description, 0, 5000) &&
+             data.status in ['pending', 'in-progress', 'completed'] &&
+             data.priority in ['low', 'medium', 'high'] &&
+             isStringBetween(data.category, 0, 50) &&
+             isTimestampOrNull(data.dueDate) &&
+             isValidAttachmentList(data.attachments) &&
+             isTimestampOrNull(data.completedAt) &&
+             isTimestampOrNull(data.deletedAt) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    // completedAt follows status: set to now when a task becomes completed,
+    // kept while it stays completed, and cleared otherwise
+    function isValidCompletion() {
+      let data = request.resource.data;
+      let wasCompleted = resource != null && resource.data.status == 'completed';
+      return data.status != 'completed' ? data.completedAt == null
+           : (wasCompleted ? data.completedAt == resource.data.completedAt
+                           : data.completedAt == request.time);
+    }
+
+    // deletedAt: moving to the trash stamps the server time; restoring sets null
+    function isValidTrashChange() {
+      let data = request.resource.data;
+      return !fieldChanged('deletedAt') || data.deletedAt == null || data.deletedAt == request.time;
+    }
+
+    // ===============================================================
+    // users/{userId}
+    // ===============================================================
+
+    match /users/{userId} {
+      // Contains the user's private note: owner only
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.note == '' &&
+                       request.resource.data.noteUpdatedAt == null;
+
+      allow update: if isOwner(userId) &&
+                       isValidUser(request.resource.data) &&
+                       areImmutableFieldsUnchanged(['createdAt']) &&
+                       (!fieldChanged('note') || request.resource.data.noteUpdatedAt == request.time) &&
+                       (!fieldChanged('noteUpdatedAt') || request.resource.data.noteUpdatedAt == request.time);
+
+      allow delete: if false;
+
+      // ===============================================================
+      // users/{userId}/tasks/{taskId}
+      // ===============================================================
+
+      match /tasks/{taskId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidTask(request.resource.data) &&
+                         request.resource.data.createdAt == request.time &&
+                         request.resource.data.updatedAt == request.time &&
+                         request.resource.data.deletedAt == null &&
+                         request.resource.data.attachments.size() == 0 &&
+                         isValidCompletion();
+
+        allow update: if isOwner(userId) &&
+                         isValidTask(request.resource.data) &&
+                         areImmutableFieldsUnchanged(['createdAt']) &&
+                         request.resource.data.updatedAt == request.time &&
+                         isValidCompletion() &&
+                         isValidTrashChange();
+
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

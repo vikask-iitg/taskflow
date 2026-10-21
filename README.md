@@ -1,92 +1,73 @@
 # TaskFlow
 
-A full-stack to-do app: Node.js + Express API, MongoDB (Mongoose), JWT auth, and a vanilla HTML/CSS/JS frontend.
+A to-do app built with vanilla HTML/CSS/JS on **Firebase**:
 
-## Quick start
+- **Firebase Authentication**: email/password (with Firebase password-reset emails), Google sign-in and phone (SMS) sign-in
+- **Cloud Firestore** (Standard edition, `asia-south1`): tasks, categories and the Quick note, synced live across tabs and devices
+- A small **Node/Express** server that serves the site and stores task attachments, checking each request's Firebase ID token
+
+Firebase project: `task-flow-app-97462` · web app `Task-Flow-App` (`1:685374773284:web:5ca35a109de65c4adc60b1`).
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env      # then set JWT_SECRET and MONGODB_URI
-npm start                 # http://localhost:3000
+cp .env.example .env
+npm run dev        # http://localhost:3000, restarts on server changes, reloads the page on front-end changes
 ```
 
-No MongoDB installed? Set `MONGODB_URI=memory` (or run `npm run dev:memory`) to run an embedded MongoDB. Its data is saved in `.data/db`, so it survives restarts. Delete that folder to start fresh.
+The browser talks to Firebase directly, so no database runs locally. Attachments are stored in `.data/uploads/<uid>/<taskId>/`.
 
-| Script | What it does |
-| --- | --- |
-| `npm start` | Run the server |
-| `npm run dev` | Development: restarts the server when back-end code changes, and open browser tabs reload automatically when anything in `public/` changes |
-| `npm run dev:memory` | Same as `dev`, with the embedded MongoDB |
+## Firestore data model
 
-Live reload runs only on `localhost` and is disabled when `NODE_ENV=production`.
+```
+users/{uid}                  name, note, noteUpdatedAt, createdAt
+users/{uid}/tasks/{taskId}   title, description, status, priority, category, dueDate,
+                             attachments[], completedAt, deletedAt, createdAt, updatedAt
+```
 
-### Sample data
+Access is controlled by [firestore.rules](firestore.rules): each user can read and write only their own documents, every field is type- and size-checked, and timestamps must be set by the server. Deleted tasks stay in the trash for 30 days, then the app removes them.
 
-Add 12 example tasks due 3 to 30 days from now to an existing account:
+## Deploying Firebase config
+
+Use the Firebase CLI through `npx` (logged in to an account with access to the project):
 
 ```bash
-node scripts/seed-sample-tasks.js you@example.com [mongoUri]
+npx -y firebase-tools@latest deploy --only firestore   # rules + indexes
+npx -y firebase-tools@latest deploy --only auth        # Email/Password + Google providers (see firebase.json)
 ```
 
-`mongoUri` defaults to `MONGODB_URI` from `.env`. With the embedded database, pass the `mongod` port shown by `ps aux | grep mongod`, for example `mongodb://127.0.0.1:60376/taskflow`.
+**Phone sign-in** can only be enabled in the Firebase Console: *Authentication → Sign-in method → Phone*. Sending real SMS needs the Blaze (pay-as-you-go) plan. For testing on the free plan, add test numbers with fixed codes under *Phone → Phone numbers for testing*.
 
-### Password reset emails
-
-Reset links are sent through SMTP. Fill in `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` and `MAIL_FROM` in `.env`. For Gmail use `smtp.gmail.com`, port `465` and an [app password](https://myaccount.google.com/apppasswords). Without SMTP settings, the link is printed in the server log instead. `APP_URL` must be the address users open the app at, because it is used to build the link.
+For any domain other than `localhost`, add it under *Authentication → Settings → Authorized domains* so Google and phone sign-in work there.
 
 ## Project structure
 
 ```
-server.js              Express app, static hosting, error handler
-config/db.js           MongoDB connection (supports MONGODB_URI=memory)
-models/User.js         User schema, bcrypt hashing
-models/Task.js         Task schema ({ timestamps: true })
-middleware/auth.js     JWT verification → req.user
-routes/auth.js         Register, login, profile, password
-routes/tasks.js        Task CRUD, search, filter, sort, trash
-routes/attachments.js  Upload, download and delete task attachments
-lib/attachmentStorage.js  Attachment files on disk and orphan cleanup
-lib/liveReload.js      Development auto-reload (server-sent events)
-lib/mailer.js          SMTP email (password reset links)
-public/                Frontend (index.html, css/, js/api.js, js/app.js)
+server.js                    Express: static site, attachments API, live reload in development
+middleware/firebaseAuth.js   Verifies Firebase ID tokens (needs only the project ID)
+routes/attachments.js        Upload / download / delete attachment files
+lib/attachmentStorage.js     Attachment files on disk
+lib/liveReload.js            Development auto-reload
+public/js/firebase.js        Firebase app config and initialization
+public/js/api.js             Data layer: Firebase Auth + Firestore (+ attachments API)
+public/js/app.js             UI
+firebase.json, .firebaserc   Firebase CLI config (Firestore, Auth providers)
+firestore.rules              Firestore Security Rules
 ```
 
-## API
+## Attachments API
 
-All task routes require `Authorization: Bearer <token>` and only ever touch the caller's own tasks.
+All routes need `Authorization: Bearer <Firebase ID token>`; files are stored per user.
 
-| Method | Path | Body / query |
+| Method | Path | |
 | --- | --- | --- |
-| POST | `/api/auth/register` | `{ name, email, password }` |
-| POST | `/api/auth/login` | `{ email, password }` |
-| GET | `/api/auth/me` | |
-| PATCH | `/api/auth/profile` | `{ name }` |
-| PATCH | `/api/auth/password` | `{ currentPassword, newPassword }`. Returns a fresh `token` (other sessions are signed out) |
-| POST | `/api/auth/forgot` | `{ email }` emails a reset link (valid 30 min). Same response whether or not the account exists |
-| POST | `/api/auth/reset` | `{ token, password }` sets a new password and signs out all existing sessions |
-| PATCH | `/api/auth/note` | `{ note }` saves the dashboard Quick note (max 10,000 characters) |
-| GET | `/api/tasks` | `?search=&status=(active\|pending\|in-progress\|completed\|overdue\|deleted)&priority=&category=&sort=(newest\|oldest\|due\|priority)` |
-| GET | `/api/tasks/categories` | Your categories plus `defaultCategories` |
-| DELETE | `/api/tasks/categories/:name` | Removes a custom category from all your tasks (the tasks are kept). Default categories can't be deleted |
-| GET | `/api/tasks/stats` | Counts: total, pending, inProgress, completed, overdue, deleted |
-| POST | `/api/tasks` | `{ title, description?, status?, priority?, dueDate?, category? }` |
-| GET | `/api/tasks/:id` | |
-| PUT / PATCH | `/api/tasks/:id` | Any task fields |
-| DELETE | `/api/tasks/:id` | Moves the task to the trash. Add `?permanent=true` to delete it for good |
-| POST | `/api/tasks/:id/restore` | Restores a task from the trash |
-| DELETE | `/api/tasks/trash` | Permanently deletes everything in the trash |
-| POST | `/api/tasks/:id/attachments` | `multipart/form-data`, one or more `files` fields (max 10 per task, 10 MB each) |
-| GET | `/api/tasks/:id/attachments/:attId` | Downloads a file. Add `?inline=1` to view images, PDFs and plain text in the browser |
-| DELETE | `/api/tasks/:id/attachments/:attId` | Removes an attachment |
-
-Deleted tasks stay in the trash for 30 days, then a MongoDB TTL index removes them automatically.
-
-Attachments are stored in `.data/uploads/<taskId>/` and are only served through the authenticated API. Only images, PDFs and plain text can open in the browser. Every other file type (including HTML and SVG) is served as a download with a sandboxed Content-Security-Policy. Files are removed when their task is permanently deleted, and a cleanup sweep runs at startup and every 6 hours for tasks the TTL index purged.
-
-`createdAt` and `updatedAt` are always set by the server. The server ignores any `userId` or timestamps sent by the client.
+| POST | `/api/attachments/:taskId` | `multipart/form-data` field `files` (max 10 per task, 10 MB each) |
+| GET | `/api/attachments/:taskId/:attId` | Download. `?inline=1` opens images, PDFs and plain text in the browser |
+| DELETE | `/api/attachments/:taskId/:attId` | Remove one file |
+| DELETE | `/api/attachments/:taskId` | Remove all files of a task |
 
 ## Keyboard shortcuts
 
 - `n`: new task
 - `/`: focus search
-- `Tab` / `Shift+Tab`: move between tasks and controls; `Esc` closes dialogs

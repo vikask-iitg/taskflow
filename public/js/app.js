@@ -213,24 +213,23 @@
     showAuthPanel(panel);
   }
 
-  /* ---------------- Forgot / reset password ---------------- */
+  /* ---------------- Forgot password & phone sign-in ---------------- */
 
-  let resetToken = null;
-
-  // login | register | forgot | reset
+  // login | register | forgot | phone
   function showAuthPanel(panel) {
     const tabbed = panel === 'login' || panel === 'register';
     $('.tabs').hidden = !tabbed;
+    $('.auth-alt').hidden = !tabbed;
     $('.auth-card').classList.toggle('is-recovery', !tabbed);
     $('#forgot-form').hidden = panel !== 'forgot';
-    $('#reset-form').hidden = panel !== 'reset';
+    $('#phone-form').hidden = panel !== 'phone';
     if (tabbed) {
       switchTab(panel);
       $(panel === 'login' ? '#login-email' : '#reg-name').focus();
     } else {
       $('#login-form').hidden = true;
       $('#register-form').hidden = true;
-      $(panel === 'forgot' ? '#forgot-email' : '#reset-password').focus();
+      $(panel === 'forgot' ? '#forgot-email' : '#phone-number').focus();
     }
   }
 
@@ -254,39 +253,77 @@
     if (!looksLikeEmail(email)) return setFormError(form, 'Please enter a valid email address.');
     try {
       const data = await withBusy($('button[type=submit]', form), () => api.forgotPassword(email));
-      $('.form-success', form).textContent = data.emailEnabled
-        ? `${data.message} Check your inbox (and spam folder). The link expires in 30 minutes.`
-        : `${data.message} Email isn’t set up on this server yet, so the link was written to the server log.`;
+      $('.form-success', form).textContent = `${data.message} Check your inbox (and spam folder).`;
     } catch (err) {
       setFormError(form, err.message);
     }
   });
 
-  $('#reset-form').addEventListener('submit', async (e) => {
+  $('#google-btn').addEventListener('click', async (e) => {
+    const authCard = $('.auth-card');
+    $$('.form-error', authCard).forEach((el) => { el.textContent = ''; });
+    try {
+      await withBusy(e.currentTarget, () => api.signInWithGoogle());
+    } catch (err) {
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+      setFormError($('#login-form').hidden ? $('#register-form') : $('#login-form'), err.message);
+    }
+  });
+
+  // Phone: step 1 sends the SMS code, step 2 confirms it
+  let phoneConfirmation = null;
+
+  function setPhoneStep(step) {
+    $('#phone-step-number').hidden = step !== 1;
+    $('#phone-step-code').hidden = step !== 2;
+    $('#phone-submit').textContent = step === 1 ? 'Send code' : 'Verify & continue';
+    $('#phone-submit').dataset.step = String(step);
+  }
+
+  $('#phone-btn').addEventListener('click', () => {
+    const form = $('#phone-form');
+    form.reset();
+    setFormError(form);
+    phoneConfirmation = null;
+    setPhoneStep(1);
+    showAuthPanel('phone');
+  });
+
+  $('#phone-change').addEventListener('click', () => {
+    phoneConfirmation = null;
+    setFormError($('#phone-form'));
+    setPhoneStep(1);
+    $('#phone-number').focus();
+  });
+
+  $('#phone-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const { password, confirm } = Object.fromEntries(new FormData(form));
+    const button = $('#phone-submit');
     setFormError(form);
-    if (password.length < 8) return setFormError(form, 'Password must be at least 8 characters.');
-    if (password !== confirm) return setFormError(form, 'The two passwords don’t match.');
-    try {
-      const data = await withBusy($('button[type=submit]', form), () => api.resetPassword(resetToken, password));
-      resetToken = null;
-      form.reset();
-      showAuthPanel('login');
-      toast(data.message, 'success');
-    } catch (err) {
-      setFormError(form, err.message);
+    if (button.dataset.step === '1') {
+      // Accept "98765 43210" or "+91 98765 43210"; default to India's +91
+      const digits = form.phone.value.replace(/[^\d+]/g, '');
+      const number = digits.startsWith('+') ? digits : `+91${digits.replace(/^0+/, '')}`;
+      if (!/^\+\d{8,15}$/.test(number)) return setFormError(form, 'Please enter a valid phone number, for example 98765 43210.');
+      try {
+        phoneConfirmation = await withBusy(button, () => api.sendPhoneCode(number, 'phone-submit'));
+        $('#phone-sent-to').textContent = number;
+        setPhoneStep(2);
+        form.code.focus();
+      } catch (err) {
+        setFormError(form, err.message);
+      }
+    } else {
+      const code = form.code.value.replace(/\D/g, '');
+      if (code.length !== 6) return setFormError(form, 'Enter the 6-digit code from the SMS.');
+      try {
+        await withBusy(button, () => api.confirmPhoneCode(phoneConfirmation, code, form.name.value));
+      } catch (err) {
+        setFormError(form, err.message);
+      }
     }
   });
-
-  // A reset link looks like https://app/#reset=<token>. Read it, then remove it from the address bar.
-  function takeResetTokenFromUrl() {
-    const match = location.hash.match(/^#reset=([a-f0-9]{64})$/);
-    if (!match) return null;
-    history.replaceState(null, '', location.pathname + location.search);
-    return match[1];
-  }
 
   function showApp() {
     $('#auth-view').hidden = true;
@@ -301,7 +338,10 @@
     $('#user-name').textContent = name;
     $('#user-avatar').textContent = name.trim().charAt(0).toUpperCase();
     renderGreeting();
-    $('#profile-email').textContent = email;
+    $('#profile-email').textContent = email || state.user.phone;
+    // Only email/password accounts have a password to change
+    $('#password-form').hidden = !state.user.providers.includes('password');
+    $('#password-form').previousElementSibling.hidden = $('#password-form').hidden;
   }
 
   const GREETING_ICONS = {
@@ -330,7 +370,7 @@
 
   function logout(message) {
     flushNote();
-    api.setToken(null);
+    api.logout();
     state.tasks = [];
     state.allTasks = [];
     $('#task-list').innerHTML = '';
@@ -373,11 +413,8 @@
     }
     setFormError(form);
     try {
-      const data = await withBusy($('button[type=submit]', form), () => api.login({ email, password }));
-      api.setToken(data.token);
-      state.user = data.user;
+      await withBusy($('button[type=submit]', form), () => api.login({ email, password }));
       form.reset();
-      showApp();
     } catch (err) {
       setFormError(form, err.message);
     }
@@ -395,19 +432,15 @@
     if (password.length < 8) return setFormError(form, 'Password must be at least 8 characters.');
     setFormError(form);
     try {
-      const data = await withBusy($('button[type=submit]', form), () => api.register({ name, email, password }));
-      api.setToken(data.token);
-      state.user = data.user;
+      await withBusy($('button[type=submit]', form), () => api.register({ name, email, password }));
       form.reset();
-      showApp();
-      toast(`Welcome to TaskFlow, ${data.user.name}!`, 'success');
+      toast(`Welcome to TaskFlow, ${name.trim()}!`, 'success');
     } catch (err) {
       setFormError(form, err.message);
     }
   });
 
   $('#logout-btn').addEventListener('click', () => logout('You have been logged out.'));
-  api.onUnauthorized = () => logout('Your session has expired. Please log in again.');
 
   /* ---------------- Tasks: load & render ---------------- */
 
@@ -542,7 +575,7 @@
 
   // Save right away (e.g. before logging out or closing the tab)
   function flushNote() {
-    if (api.getToken() && noteEl.value !== noteSaved) saveNote({ keepalive: true });
+    if (api.isSignedIn() && noteEl.value !== noteSaved) saveNote();
   }
 
   noteEl.addEventListener('input', () => {
@@ -2396,8 +2429,7 @@
     if (newPassword.length < 8) return setFormError(form, 'New password must be at least 8 characters.');
     setFormError(form);
     try {
-      const data = await withBusy($('button[type=submit]', form), () => api.changePassword({ currentPassword, newPassword }));
-      if (data.token) api.setToken(data.token); // other sessions are signed out; keep this one
+      await withBusy($('button[type=submit]', form), () => api.changePassword({ currentPassword, newPassword }));
       form.reset();
       toast('Password updated', 'success');
     } catch (err) {
@@ -2523,21 +2555,16 @@
     }
   }, 60000);
 
-  (async function init() {
-    resetToken = takeResetTokenFromUrl();
-    if (resetToken) {
-      // Resetting a password signs you out, so show the reset screen even if logged in
-      api.setToken(null);
-      return showAuth('reset');
-    }
-    if (!api.getToken()) return showAuth();
-    try {
-      const { user } = await api.me();
+  // Firebase restores the session on load and tells us whenever someone signs in or out
+  api.onAuthChange((user) => {
+    if (user) {
       state.user = user;
       showApp();
-    } catch {
-      api.setToken(null);
+    } else if ($('#auth-view').hidden || !state.authShown) {
+      state.authShown = true;
       showAuth();
     }
-  })();
+  });
+  // Changes made on another device or tab show up here straight away
+  api.onTasksChange(() => loadTasks({ silent: true }));
 })();
