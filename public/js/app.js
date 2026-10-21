@@ -2552,8 +2552,9 @@
   $$('.stat[data-filter]').forEach((b) => {
     b.addEventListener('click', () => {
       const { filter } = b.dataset;
-      // Clicking the active card again goes back to showing everything
-      state.filters.status = state.filters.status === filter ? '' : filter;
+      // Clicking the card that is already selected keeps it selected
+      if (state.filters.status === filter) return;
+      state.filters.status = filter;
       $('#filter-status').value = state.filters.status;
       filterSelects.status.refresh();
       syncStatButtons();
