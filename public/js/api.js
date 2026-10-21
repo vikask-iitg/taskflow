@@ -190,6 +190,7 @@ const monthKey = (t) => {
   const d = new Date(t.dueDate || t.createdAt);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
+const isDueToday = (t) => Boolean(t.dueDate) && new Date(t.dueDate).toDateString() === new Date().toDateString();
 const isOverdue = (t) => t.dueDate && t.status !== 'completed' && new Date(t.dueDate) < new Date();
 
 // Deleted tasks are removed for good after TRASH_RETENTION_DAYS
@@ -321,6 +322,7 @@ const api = {
     let tasks = [...cache.values()].filter((t) => (status === 'deleted' ? t.deletedAt : !t.deletedAt));
     if (status === 'active') tasks = tasks.filter((t) => t.status !== 'completed');
     else if (status === 'overdue') tasks = tasks.filter(isOverdue);
+    else if (status === 'today') tasks = tasks.filter(isDueToday);
     else if (STATUSES.includes(status)) tasks = tasks.filter((t) => t.status === status);
     if (priority) tasks = tasks.filter((t) => t.priority === priority);
     if (category) tasks = tasks.filter((t) => t.category === category);

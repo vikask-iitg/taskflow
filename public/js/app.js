@@ -529,7 +529,7 @@
     $('#stat-pending').textContent = count('pending');
     $('#stat-progress').textContent = count('in-progress');
     $('#stat-done').textContent = count('completed');
-    $('#stat-overdue').textContent = overdue;
+    $('#stat-today').textContent = all.filter(isDueToday).length;
     $('#stat-deleted').textContent = state.deletedCount;
     syncStatButtons();
 
@@ -873,6 +873,7 @@
       let text = 'Click “New task” to add your first one.';
       if (inTrash) [title, text] = ['Trash is empty', 'Deleted tasks show up here so you can restore them.'];
       else if (state.filters.status === 'overdue' && !filtered) [title, text] = ['Nothing overdue', 'You’re all caught up. Nice work!'];
+      else if (state.filters.status === 'today' && !filtered) [title, text] = ['Nothing due today', 'Enjoy the free time, or plan something new.'];
       else if (filtered || state.filters.status) [title, text] = ['No matching tasks', 'Try a different search or clear your filters.'];
       $('.empty__title', empty).textContent = title;
       $('.empty__text', empty).textContent = text;
@@ -1773,6 +1774,7 @@
   const FILTER_STATUS_ICONS = {
     '': svg16('<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>'),
     active: svg16('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>'),
+    today: svg16('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/>'),
     overdue: svg16('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M5 3 2 6M19 3l3 3"/>'),
     deleted: ICONS.trash.replace('width="18" height="18"', 'width="16" height="16"'),
     ...STATUS_ICONS,
