@@ -302,13 +302,13 @@
     const button = $('#phone-submit');
     setFormError(form);
     if (button.dataset.step === '1') {
-      // Accept "98765 43210" or "+91 98765 43210"; default to India's +91
-      const digits = form.phone.value.replace(/[^\d+]/g, '');
-      const number = digits.startsWith('+') ? digits : `+91${digits.replace(/^0+/, '')}`;
-      if (!/^\+\d{8,15}$/.test(number)) return setFormError(form, 'Please enter a valid phone number, for example 98765 43210.');
+      // Indian mobile numbers only: 10 digits starting with 6-9. A typed +91 / 91 / leading 0 is ignored.
+      const digits = form.phone.value.replace(/\D/g, '').replace(/^(91(?=\d{10}$)|0(?=\d{10}$))/, '');
+      if (!/^[6-9]\d{9}$/.test(digits)) return setFormError(form, 'Please enter a valid 10-digit Indian mobile number, for example 98765 43210.');
+      const number = `+91${digits}`;
       try {
         phoneConfirmation = await withBusy(button, () => api.sendPhoneCode(number, 'phone-submit'));
-        $('#phone-sent-to').textContent = number;
+        $('#phone-sent-to').textContent = `${digits.slice(0, 5)} ${digits.slice(5)}`;
         setPhoneStep(2);
         form.code.focus();
       } catch (err) {

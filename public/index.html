@@ -77,8 +77,8 @@
         <div id="phone-step-number">
           <div class="field">
             <label for="phone-number">Mobile number</label>
-            <input id="phone-number" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210" />
-            <small class="hint">Include the country code. Numbers without one are treated as Indian (+91).</small>
+            <input id="phone-number" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" maxlength="14" placeholder="98765 43210" aria-describedby="phone-hint" />
+            <small class="hint" id="phone-hint">Enter your 10-digit Indian mobile number.</small>
           </div>
         </div>
         <div id="phone-step-code" hidden>
