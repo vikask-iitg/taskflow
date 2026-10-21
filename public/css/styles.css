@@ -2156,14 +2156,26 @@ input[type="date"], input[type="time"] {
 .stat--today .stat__icon { color: #c2410c; background: #ffedd5; }
 :root[data-theme="dark"] .stat--today .stat__icon { color: #fdba74; background: #431407; }
 .status-opt--today svg { color: #ea580c; }
-/* The first column is a little wider so "Today's Tasks" fits */
-.stats { grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr)); }
-@media (min-width: 1200px) and (max-width: 1439px) {
-  .layout__stats { grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr)); }
+/* All stat boxes are the same size; slightly tighter spacing lets "Today's Tasks" fit on one line */
+.stats .stat__top { gap: 0.25rem; }
+.stats .stat__icon { width: 22px; height: 22px; border-radius: 6px; }
+.stats .stat__icon svg { width: 13px; height: 13px; }
+@media (min-width: 1200px) {
+  .layout__stats .stat { padding-inline: 0.6rem 0.5rem; }
+  .layout__stats .stat__label { font-size: 0.72rem; }
 }
-@media (max-width: 860px) {
-  .stats { grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr)); }
+@media (max-width: 600px) {
+  .stats .stat { padding-inline: 0.5rem 0.4rem; }
+  .stats .stat__icon { width: 18px; height: 18px; border-radius: 5px; }
+  .stats .stat__icon svg { width: 11px; height: 11px; }
+  .stats .stat__label { font-size: 0.66rem; }
 }
-@media (max-width: 340px) {
+@media (max-width: 1000px) {
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+  .stats .stat__label { font-size: 0.62rem; letter-spacing: -0.005em; }
+}
+@media (max-width: 360px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
