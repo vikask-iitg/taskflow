@@ -2398,3 +2398,13 @@ input[type="date"], input[type="time"] {
 .link-copy.link-copy:hover { color: var(--primary-contrast); background: var(--primary); border-color: var(--primary); }
 .link-copy.link-copy:active { transform: scale(0.95); }
 .link-copy.link-copy.is-copied { color: var(--low-fg); background: var(--low-bg); border-color: color-mix(in srgb, var(--low-dot) 35%, transparent); }
+/* Phones: Delete and Edit share the row equally, Mark complete spans underneath */
+@media (max-width: 600px) {
+  .detail .detail__footer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detail .detail__footer .detail__spacer { display: none; }
+  .detail .detail__footer [data-detail-action="toggle"] { grid-column: 1 / -1; }
+}
+@media (min-width: 601px) {
+  .detail .detail__footer .btn--danger-outline,
+  .detail .detail__footer [data-detail-action="edit"] { min-width: 104px; justify-content: center; }
+}
