@@ -727,6 +727,8 @@
     $('#reminders-count').textContent = `${upcoming.length} task${upcoming.length === 1 ? '' : 's'}`;
 
     const [next, ...rest] = upcoming;
+    // Shown under the title while the dropdown is collapsed (phones)
+    $('#reminders-peek').innerHTML = `<span class="reminders__peek-title">Next: <strong>${escapeHtml(next.title)}</strong></span><span class="reminders__peek-when">${escapeHtml(relativeDue(next.dueDate))}</span>`;
     const soon = new Date(next.dueDate) - now < 24 * 60 * 60 * 1000;
     $('#next-up').innerHTML = `
       <button type="button" class="next-up${soon ? ' next-up--soon' : ''}" data-id="${next._id}"
