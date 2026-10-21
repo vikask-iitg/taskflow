@@ -2460,10 +2460,11 @@ input[type="date"], input[type="time"] {
   :root[data-theme="dark"] .reminders__peek-when { color: #fcd34d; }
 }
 
-/* ---------- Greeting banner ---------- */
-.hero.hero {
+/* ---------- Greeting banner (New task stays outside it) ---------- */
+.hero.hero { align-items: center; gap: 1rem; }
+.hero__card {
+  flex: 1; min-width: 0;
   position: relative; overflow: hidden; isolation: isolate;
-  align-items: center;
   padding: 1.1rem 1.3rem;
   border-radius: 18px;
   background: linear-gradient(120deg, #eef2ff 0%, #f5f3ff 55%, #fdf4ff 100%);
@@ -2471,12 +2472,12 @@ input[type="date"], input[type="time"] {
   box-shadow: 0 10px 30px -22px rgb(79 70 229 / 0.6);
 }
 /* Soft decorative glows */
-.hero.hero::before, .hero.hero::after {
+.hero__card::before, .hero__card::after {
   content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none;
 }
-.hero.hero::before { width: 220px; height: 220px; right: -60px; top: -110px; background: radial-gradient(circle, rgb(139 92 246 / 0.22), transparent 70%); }
-.hero.hero::after { width: 180px; height: 180px; right: 22%; bottom: -120px; background: radial-gradient(circle, rgb(99 102 241 / 0.16), transparent 70%); }
-:root[data-theme="dark"] .hero.hero {
+.hero__card::before { width: 220px; height: 220px; right: -60px; top: -110px; background: radial-gradient(circle, rgb(139 92 246 / 0.22), transparent 70%); }
+.hero__card::after { width: 180px; height: 180px; right: 22%; bottom: -120px; background: radial-gradient(circle, rgb(99 102 241 / 0.16), transparent 70%); }
+:root[data-theme="dark"] .hero__card {
   background: linear-gradient(120deg, #1e1b4b 0%, #221a3f 55%, #2a1638 100%);
   border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
 }
@@ -2491,10 +2492,17 @@ input[type="date"], input[type="time"] {
 .hero .summary__date svg { color: var(--primary); }
 .hero .summary__pill { background: var(--surface); }
 .hero .summary__pill--danger { background: var(--danger-bg); }
-.hero #new-task-btn { position: relative; box-shadow: 0 8px 20px -10px rgb(79 70 229 / 0.7); }
+.hero #new-task-btn { flex-shrink: 0; align-self: center; }
 @media (max-width: 600px) {
-  .hero.hero { padding: 0.9rem 0.9rem 0.95rem; border-radius: 16px; }
-  .hero.hero::before { width: 160px; height: 160px; right: -50px; top: -80px; }
-  .hero.hero::after { display: none; }
-  .hero #new-task-btn { margin-top: 0.15rem; }
+  .hero.hero { gap: 0.75rem; align-items: stretch; }
+  .hero__card { padding: 0.9rem 0.9rem 0.95rem; border-radius: 16px; }
+  .hero__card::before { width: 160px; height: 160px; right: -50px; top: -80px; }
+  .hero__card::after { display: none; }
+  .hero #new-task-btn { align-self: stretch; }
+}
+
+/* Phones: the clock box and the progress box are the same size */
+@media (max-width: 600px) {
+  .today.side-card { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .today .today__now, .today .today__main { align-self: stretch; margin-top: 0.45rem; margin-bottom: 0; box-sizing: border-box; }
 }
