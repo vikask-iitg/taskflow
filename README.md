@@ -6,7 +6,7 @@ A to-do app built with vanilla HTML/CSS/JS on **Firebase**:
 - **Cloud Firestore** (Standard edition, `asia-south1`): tasks, categories and the Quick note, synced live across tabs and devices
 - A small **Node/Express** API for task attachments, checking each request's Firebase ID token. Files go to a private **Vercel Blob** store in production and to local disk in development
 
-Live: **https://taskflow-pearl-pi.vercel.app** (Vercel project `vikas-kumar-khurendras-projects/taskflow`, connected to this GitHub repo, so every push to `main` deploys).
+Live: **https://taskflow-everyday.vercel.app** (Vercel project `vikas-kumar-khurendras-projects/taskflow`, connected to this GitHub repo, so every push to `main` deploys).
 
 Firebase project: `task-flow-app-97462` · web app `Task-Flow-App` (`1:685374773284:web:5ca35a109de65c4adc60b1`).
 
