@@ -1988,7 +1988,7 @@ input[type="date"], input[type="time"] {
 
 /* Greeting: the user's name in brand purple */
 .greeting__name {
-  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  background: linear-gradient(135deg, #3730a3, #5b21b6);
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
 }
