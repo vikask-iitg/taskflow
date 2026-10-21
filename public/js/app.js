@@ -2,6 +2,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+  let lastListHtml = ''; // what renderTasks last put in #task-list
   const state = {
     user: null,
     tasks: [], // currently visible (filtered/sorted) tasks
@@ -370,6 +371,7 @@
     state.tasks = [];
     state.allTasks = [];
     $('#task-list').innerHTML = '';
+    lastListHtml = '';
     showAuth();
     if (message) toast(message);
   }
@@ -444,6 +446,7 @@
     const list = $('#task-list');
     list.setAttribute('aria-busy', 'true');
     $('#empty-state').hidden = true;
+    lastListHtml = '';
     list.innerHTML = Array.from({ length: n }, () => `
       <li class="task-card skeleton" aria-hidden="true">
         <span class="sk sk--check"></span>
@@ -480,6 +483,7 @@
       if (seq !== loadSeq) return;
       $('#task-list').setAttribute('aria-busy', 'false');
       $('#task-list').innerHTML = '';
+      lastListHtml = '';
       toast(err.message, 'error');
     }
   }
@@ -822,7 +826,15 @@
     const restore = focused && list.contains(focused)
       && { id: focused.closest('.task-card').dataset.id, action: focused.dataset.action };
     list.setAttribute('aria-busy', 'false');
-    list.innerHTML = state.tasks.map(taskCardHtml).join('');
+    // Live sync re-renders after every save; skip identical output and only animate cards that are new,
+    // otherwise the whole list replays its fade-in and blinks on each click
+    const html = state.tasks.map(taskCardHtml).join('');
+    if (html !== lastListHtml) {
+      const shown = new Set([...list.querySelectorAll('.task-card')].map((c) => c.dataset.id));
+      list.innerHTML = html;
+      lastListHtml = html;
+      list.querySelectorAll('.task-card').forEach((c) => { if (!shown.has(c.dataset.id)) c.classList.add('is-new'); });
+    }
     if (restore) $(`.task-card[data-id="${restore.id}"] [data-action="${restore.action}"]`, list)?.focus();
 
     const inTrash = state.filters.status === 'deleted';

@@ -804,8 +804,8 @@ input[type="date"], input[type="time"] {
   padding: 1rem 1rem 1rem 0.9rem;
   box-shadow: var(--shadow-sm);
   transition: opacity 0.2s, transform 0.2s, border-color 0.2s, background-color 0.2s;
-  animation: card-in 0.2s ease-out;
 }
+.task-card.is-new { animation: card-in 0.2s ease-out; }
 @keyframes card-in { from { opacity: 0; transform: translateY(4px); } }
 .task-card--high { border-left-color: var(--high-dot); }
 .task-card--low { border-left-color: var(--low-dot); }
