@@ -438,14 +438,6 @@ input[type="date"], input[type="time"] {
 #phone-step-number[hidden], #phone-step-code[hidden] { display: none; }
 /* Forgot / reset screens have their own heading, so hide the welcome intro */
 .auth-card.is-recovery .auth-card__intro { display: none; }
-.auth-panel__icon {
-  display: inline-grid; place-items: center;
-  width: 44px; height: 44px; margin-bottom: 0.6rem;
-  border-radius: 14px;
-  color: #fff;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  box-shadow: 0 6px 14px -6px rgb(79 70 229 / 0.6);
-}
 .auth-panel__head h2 { font-size: 1.15rem; }
 .auth-panel__head p { margin-top: 0.3rem; font-size: 0.88rem; }
 .link-btn.auth-back { align-self: center; font-size: 0.85rem; text-decoration: none; color: var(--text-muted); }
