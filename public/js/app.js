@@ -2558,14 +2558,19 @@
   $$('.stat[data-filter]').forEach((b) => {
     b.addEventListener('click', () => {
       const { filter } = b.dataset;
-      // Clicking the card that is already selected keeps it selected
-      if (state.filters.status === filter) return;
-      state.filters.status = filter;
-      $('#filter-status').value = state.filters.status;
-      filterSelects.status.refresh();
-      syncStatButtons();
-      loadTasks();
-      $('#task-list').closest('section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Clicking the card that is already selected keeps it selected (and still jumps to the list)
+      if (state.filters.status !== filter) {
+        state.filters.status = filter;
+        $('#filter-status').value = state.filters.status;
+        filterSelects.status.refresh();
+        syncStatButtons();
+        loadTasks();
+      }
+      // Bring the matching tasks into view (just below the sticky top bar) unless they already are
+      const list = $('#task-list');
+      const top = list.getBoundingClientRect().top;
+      const barBottom = $('.topbar').getBoundingClientRect().bottom;
+      if (top > innerHeight * 0.6 || top < barBottom) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 

@@ -2363,7 +2363,8 @@ input[type="date"], input[type="time"] {
 .detail .detail__footer .btn--danger-outline:hover { border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
 
 /* Task details: the whole popup scrolls when the content is taller than the screen */
-.dialog--detail { max-height: calc(100dvh - 2rem); display: flex; flex-direction: column; }
+.dialog--detail { max-height: calc(100dvh - 2rem); }
+.dialog--detail[open] { display: flex; flex-direction: column; } /* only when open: a closed <dialog> must stay hidden */
 .dialog--detail .detail { min-height: 0; max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
 .detail .detail__desc { max-height: none; overflow: visible; }
 
@@ -2407,4 +2408,12 @@ input[type="date"], input[type="time"] {
 @media (min-width: 601px) {
   .detail .detail__footer .btn--danger-outline,
   .detail .detail__footer [data-detail-action="edit"] { min-width: 104px; justify-content: center; }
+}
+
+/* Jumping to the task list stops just below the sticky top bar */
+#task-list { scroll-margin-top: 76px; }
+@media (max-width: 600px) {
+  #task-list { scroll-margin-top: 76px; }
+  /* Enough room below the tasks that the list can always scroll up to the top bar */
+  #task-list { min-height: calc(100dvh - 96px); }
 }
