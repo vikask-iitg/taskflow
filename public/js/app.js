@@ -841,7 +841,6 @@
           <h3 class="task-card__title"><button type="button" class="task-card__open" data-action="open" aria-haspopup="dialog">${escapeHtml(t.title)}</button></h3>
           <div class="task-card__time">${timeChipsHtml(t)}</div>
           ${t.description ? `<p class="task-card__desc">${linkify(t.description)}</p>` : ''}
-          <p class="task-card__added"><span aria-hidden="true">🕒</span> <time datetime="${t.createdAt}">Added ${escapeHtml(fmtDateSmart(t.createdAt))}</time></p>
           <div class="task-card__meta">
             <span class="badge badge--${t.priority}"><span class="visually-hidden">Priority: </span>${PRIORITY_LABELS[t.priority]}</span>
             <span class="badge badge--status badge--${t.status}">${STATUS_LABELS[t.status]}</span>

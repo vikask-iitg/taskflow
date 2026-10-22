@@ -2543,5 +2543,7 @@ input[type="date"], input[type="time"] {
 /* Deleted cards keep their Deleted / Completed / Removed-in row */
 .task-card.is-deleted .task-card__time { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
 .task-card.is-deleted .task-card__time .chip { font-size: 0.7rem; padding: 0.1rem 0.45rem; }
-.task-card__added { margin-top: 0.15rem; font-size: 0.72rem; color: var(--text-muted); }
-.task-card.is-completed .task-card__added { text-decoration: none; }
+/* "Added …" chip sits just below the title, styled like the due-date chip */
+.task-card .task-card__time { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+.task-card .task-card__time .chip { font-size: 0.7rem; padding: 0.1rem 0.45rem; }
+@media (max-width: 600px) { .task-card .task-card__time .chip { font-size: 0.68rem; padding: 0.1rem 0.4rem; } }
