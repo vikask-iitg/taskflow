@@ -24,10 +24,13 @@
   const escapeHtml = (s = '') =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+  // Times are always 12-hour with AM/PM, e.g. "2:54 PM"
+  const timeFmt = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const fmtTime = (d) => timeFmt.format(new Date(d));
+
+  // "22 Oct, 2:54 PM"
   const fmtDate = (d, opts = {}) =>
-    new Intl.DateTimeFormat(undefined, {
-      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', ...opts,
-    }).format(new Date(d));
+    `${new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', ...opts }).format(new Date(d))}, ${fmtTime(d)}`;
 
   function fmtDateSmart(d) {
     const date = new Date(d);
@@ -704,7 +707,7 @@
     const d = new Date(iso);
     const startOf = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
     const days = Math.round((startOf(d) - startOf(new Date())) / 86400000);
-    const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(d);
+    const time = fmtTime(d);
     if (days === 0) return `Today, ${time}`;
     if (days === 1) return `Tomorrow, ${time}`;
     return `${new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(d)}, ${time}`;
@@ -838,6 +841,7 @@
           <h3 class="task-card__title"><button type="button" class="task-card__open" data-action="open" aria-haspopup="dialog">${escapeHtml(t.title)}</button></h3>
           <div class="task-card__time">${timeChipsHtml(t)}</div>
           ${t.description ? `<p class="task-card__desc">${linkify(t.description)}</p>` : ''}
+          <p class="task-card__added"><span aria-hidden="true">🕒</span> <time datetime="${t.createdAt}">Added ${escapeHtml(fmtDateSmart(t.createdAt))}</time></p>
           <div class="task-card__meta">
             <span class="badge badge--${t.priority}"><span class="visually-hidden">Priority: </span>${PRIORITY_LABELS[t.priority]}</span>
             <span class="badge badge--status badge--${t.status}">${STATUS_LABELS[t.status]}</span>
@@ -1037,7 +1041,7 @@
     const d = new Date(iso);
     const sameYear = d.getFullYear() === new Date().getFullYear();
     const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) }).format(d);
-    const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(d);
+    const time = fmtTime(d);
     return `<span class="detail__when"><span class="detail__date">${escapeHtml(day)}</span><span class="detail__clock">${escapeHtml(time)}</span></span>`;
   };
 
@@ -2029,13 +2033,12 @@
     return `<button type="button" class="time-chip" data-time="${t}">${timeLabel.format(new Date(2000, 0, 1, h, m))}</button>`;
   }).join('');
 
-  const time12 = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   // "Thu, 22 Oct" — the year is only added when it isn't the current one
   const fieldDateThisYear = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
   const fieldDateOtherYear = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const fieldDate = { format: (d) => (d.getFullYear() === new Date().getFullYear() ? fieldDateThisYear : fieldDateOtherYear).format(d) };
   const parseYmd = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-  const fmtTime12 = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return time12.format(new Date(2000, 0, 1, h, m)); };
+  const fmtTime12 = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return fmtTime(new Date(2000, 0, 1, h, m)); };
 
   // Keeps the quick buttons and the time field's text in step with the hidden date/time values
   function syncTimeChips() {
