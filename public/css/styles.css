@@ -2535,3 +2535,11 @@ input[type="date"], input[type="time"] {
     background: rgb(255 255 255 / 0.2); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.15);
   }
 }
+
+/* Completion time */
+.chip.chip--done { color: var(--low-fg); background: var(--low-bg); border-color: color-mix(in srgb, var(--low-dot) 30%, transparent); font-weight: 600; }
+.task-card.is-completed .chip--done { opacity: 1; text-decoration: none; }
+.detail__row--completed .detail__row-icon { color: var(--low-fg); background: var(--low-bg); }
+/* Deleted cards keep their Deleted / Completed / Removed-in row */
+.task-card.is-deleted .task-card__time { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+.task-card.is-deleted .task-card__time .chip { font-size: 0.7rem; padding: 0.1rem 0.45rem; }

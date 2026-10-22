@@ -772,6 +772,14 @@
       </span>`;
   }
 
+  // Green "Completed <date>" chip for finished tasks (also shown in Deleted)
+  function doneChipHtml(t) {
+    const at = completedOn(t);
+    if (!at) return '';
+    return `<span class="chip chip--done" title="Completed ${escapeHtml(fmtDateSmart(at))}">
+      <span aria-hidden="true">✓</span><time datetime="${at}">Completed ${escapeHtml(fmtDateSmart(at))}</time></span>`;
+  }
+
   function timeChipsHtml(t) {
     return timeChip('🕒', 'Added', t.createdAt);
   }
@@ -786,6 +794,7 @@
           <h3 class="task-card__title"><button type="button" class="task-card__open" data-action="open" aria-haspopup="dialog">${escapeHtml(t.title)}</button></h3>
           <div class="task-card__time">
             ${timeChip('🗑', 'Deleted', t.deletedAt)}
+            ${doneChipHtml(t)}
             <span class="chip chip--time"><span aria-hidden="true">⏳</span><span>Removed in ${daysLeft} day${daysLeft === 1 ? '' : 's'}</span></span>
           </div>
           ${t.description ? `<p class="task-card__desc">${linkify(t.description)}</p>` : ''}
@@ -834,6 +843,7 @@
             <span class="badge badge--status badge--${t.status}">${STATUS_LABELS[t.status]}</span>
             ${t.category ? `<span class="chip chip--cat"><span aria-hidden="true">#</span>${escapeHtml(t.category)}</span>` : ''}
             ${due}
+            ${doneChipHtml(t)}
             ${t.attachments?.length ? `<span class="chip chip--att" title="${t.attachments.length} attachment${t.attachments.length === 1 ? '' : 's'}"><span aria-hidden="true">📎</span>${t.attachments.length}<span class="visually-hidden"> attachment${t.attachments.length === 1 ? '' : 's'}</span></span>` : ''}
           </div>
         </div>
@@ -1057,6 +1067,7 @@
     category: DETAIL_ICON('<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>'),
     due: DETAIL_ICON('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
     created: DETAIL_ICON('<path d="M12 5v14M5 12h14"/>'),
+    completed: DETAIL_ICON('<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.6-4.9"/>'),
     updated: DETAIL_ICON('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'),
     deleted: DETAIL_ICON('<path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'),
   };
@@ -1140,6 +1151,7 @@
         ${detailRow('category', 'Category', t.category ? `<span class="detail__cat detail__cat--plain">${catIcon}${escapeHtml(t.category)}</span>` : '<span class="muted">None</span>')}
         ${detailRow('due', 'Due', due, dueSub)}
         ${detailRow('created', 'Created', fmtStamp(t.createdAt), escapeHtml(timeAgo(t.createdAt)))}
+        ${completedOn(t) ? detailRow('completed', 'Completed', fmtStamp(completedOn(t)), escapeHtml(timeAgo(completedOn(t)))) : ''}
         ${detailRow('updated', 'Last updated', fmtStamp(t.updatedAt), escapeHtml(timeAgo(t.updatedAt)))}
         ${deleted ? detailRow('deleted', 'Deleted', fmtStamp(t.deletedAt), escapeHtml(timeAgo(t.deletedAt))) : ''}
       </dl>
