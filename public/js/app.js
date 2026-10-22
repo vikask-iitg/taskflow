@@ -2583,10 +2583,14 @@
         loadTasks();
       }
       // Bring the matching tasks into view (just below the sticky top bar) unless they already are
-      const list = $('#task-list');
-      const top = list.getBoundingClientRect().top;
-      const barBottom = $('.topbar').getBoundingClientRect().bottom;
-      if (top > innerHeight * 0.6 || top < barBottom) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Wait a tick so an empty result has swapped the list for the "nothing here" message
+      requestAnimationFrame(() => {
+        const list = $('#task-list');
+        const target = list.children.length ? list : $('#empty-state');
+        const top = target.getBoundingClientRect().top;
+        const barBottom = $('.topbar').getBoundingClientRect().bottom;
+        if (top > innerHeight * 0.6 || top < barBottom) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     });
   });
 

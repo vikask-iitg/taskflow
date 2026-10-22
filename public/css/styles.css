@@ -2416,6 +2416,9 @@ input[type="date"], input[type="time"] {
   #task-list { scroll-margin-top: 76px; }
   /* Enough room below the tasks that the list can always scroll up to the top bar */
   #task-list { min-height: calc(100dvh - 96px); }
+  /* No matching tasks: the message sits right under the filters, the spare room goes below it */
+  #task-list:empty { min-height: 0; }
+  #task-list:empty + .empty { scroll-margin-top: 76px; margin-bottom: max(0px, calc(100dvh - 96px - 260px)); }
 }
 
 /* Upcoming header: bell tile, count pill */
