@@ -747,11 +747,13 @@ input[type="date"], input[type="time"] {
 .next-up__title { font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .next-up__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--text-muted); }
 .next-up__countdown { font-weight: 700; color: var(--primary); white-space: nowrap; }
-/* Due within 24h: switch to an amber "heads up" tone */
-.next-up--soon { border-color: color-mix(in srgb, var(--medium-dot) 55%, var(--border)); background: color-mix(in srgb, var(--medium-bg) 70%, var(--surface)); }
-.next-up--soon:hover { background: var(--medium-bg); }
-.next-up--soon .next-up__label { background: var(--medium-fg); color: var(--surface); }
-.next-up--soon .next-up__countdown { color: var(--medium-fg); }
+/* Due within 24h: same purple family as the card, just a stronger outline and glow */
+.next-up--soon {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.next-up--soon:hover { background: color-mix(in srgb, var(--primary) 6%, var(--surface)); }
 
 /* Nothing due in the next 7 days */
 .upcoming-empty {

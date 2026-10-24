@@ -322,7 +322,7 @@ const api = {
   /* Tasks */
   async listTasks(params = {}) {
     await tasksReady;
-    const { search = '', status = '', priority = '', category = '', month = '', sort = 'newest' } = params;
+    const { search = '', status = '', priority = '', category = '', month = '', sort = 'due' } = params;
     const q = search.trim().toLowerCase();
     let tasks = [...cache.values()].filter((t) => (status === 'deleted' ? t.deletedAt : !t.deletedAt));
     // Finished tasks only show under Completed (and in the trash once deleted); 'all' keeps everything

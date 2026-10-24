@@ -14,7 +14,7 @@
     completedRetentionDays: 60,
     editingId: null,
     // The list opens on today's tasks; the Total card shows everything
-    filters: { search: '', status: 'today', priority: '', category: '', month: '', sort: 'newest' },
+    filters: { search: '', status: 'today', priority: '', category: '', month: '', sort: 'due' },
   };
 
   const STATUS_LABELS = { pending: 'Pending', completed: 'Completed' };
