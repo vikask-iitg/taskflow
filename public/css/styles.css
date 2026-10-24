@@ -674,10 +674,12 @@ input[type="date"], input[type="time"] {
   border-color: var(--note-border);
   box-shadow: 0 6px 16px -10px rgb(146 64 14 / 0.45);
 }
-.note__header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.note__title { display: flex; align-items: center; gap: 0.4rem; font-size: 0.92rem; font-weight: 700; color: var(--note-text); }
-.note__title svg { color: var(--note-muted); }
-.note__status { font-size: 0.7rem; font-weight: 600; color: var(--note-muted); opacity: 0.85; white-space: nowrap; }
+.note__header { display: flex; align-items: center; gap: 0.4rem; }
+/* Wider screens: icon, title and status sit in one row (the heading box only matters on phones) */
+.note__icon { display: grid; place-items: center; color: var(--note-muted); }
+.note__heading { display: contents; }
+.note__title { font-size: 0.92rem; font-weight: 700; color: var(--note-text); }
+.note__status { margin-left: auto; font-size: 0.7rem; font-weight: 600; color: var(--note-muted); opacity: 0.85; white-space: nowrap; }
 .note__status.is-saving { opacity: 0.65; }
 .note__status.is-error { color: var(--danger); opacity: 1; }
 .note__text {
@@ -2302,9 +2304,16 @@ input[type="date"], input[type="time"] {
 @media (max-width: 600px) {
   .layout { grid-template-areas: "stats" "today" "upcoming" "note" "list"; gap: 0.75rem; }
   .side-card.note { gap: 0; padding: 0.75rem 0.8rem; }
-  .note__header { cursor: pointer; justify-content: flex-start; user-select: none; }
-  .note__title { font-size: 0.95rem; }
-  .note__status { margin-left: auto; }
+  /* Same layout as the Upcoming header: icon box, title · status, preview line under the title */
+  .note__header { cursor: pointer; gap: 0.5rem; user-select: none; }
+  .note__icon {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px;
+    color: var(--note-bg); background: var(--note-muted);
+    box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--note-muted) 70%, transparent);
+  }
+  .note__heading { display: block; flex: 1; min-width: 0; font-size: 0.95rem; line-height: 1.2; }
+  .note__title { display: inline; font-size: 0.95rem; line-height: 1.2; }
+  .note__status { margin: 0 0 0 0.3rem; font-size: 0.74rem; font-weight: 500; opacity: 1; }
   .note__toggle {
     display: grid; place-items: center; flex-shrink: 0;
     width: 30px; height: 30px; margin-left: 0.25rem; padding: 0;
@@ -2316,8 +2325,8 @@ input[type="date"], input[type="time"] {
   .note__toggle svg { transition: transform 0.2s; }
   .note.is-open .note__toggle svg { transform: rotate(180deg); }
   .note:not(.is-open) .note__peek {
-    display: block; margin: 0.15rem 0 0 1.4rem;
-    font-size: 0.74rem; color: var(--note-muted);
+    display: block; margin-top: 0.15rem;
+    font-size: 0.74rem; line-height: 1.5; color: var(--note-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .note:not(.is-open) .note__body { display: none; }
@@ -2619,9 +2628,10 @@ input[type="date"], input[type="time"] {
   .dialog--task .dropzone__browse { flex: 1; justify-content: center; }
   /* Quick picks stay on one line and scroll sideways if needed */
   .dialog--task .quick-row { margin-top: 0.1rem; }
-  .dialog--task .time-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0.25rem; }
+  .dialog--task .time-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0.15rem; }
   .dialog--task .time-chips::-webkit-scrollbar { display: none; }
-  .dialog--task .time-chip { flex-shrink: 0; padding: 0.15rem 0.45rem; font-size: 0.72rem; }
+  .dialog--task .time-chip { flex-shrink: 0; padding: 0.15rem 0.32rem; font-size: 0.7rem; }
+  .dialog--task .time-chip[data-time="18:00"] { display: none; } /* only room for three: 10 AM, 12 PM, 10 PM */
   .dialog--task .task-grid { gap: 0.55rem 0.6rem; }
   .dialog--task .dialog__footer { margin: 0.1rem -0.9rem 0; padding: 0.55rem 0.9rem 0.7rem; }
   .dialog--task .dialog__footer .btn { min-height: 38px; padding-top: 0.4rem; padding-bottom: 0.4rem; }
