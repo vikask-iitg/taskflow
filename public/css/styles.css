@@ -1044,15 +1044,22 @@ input[type="date"], input[type="time"] {
 .task-head__text h2 { line-height: 1.2; letter-spacing: -0.01em; }
 .task-head__sub { margin-top: 0.1rem; font-size: 0.8rem; color: var(--text-muted); }
 .task-head__close {
-  flex-shrink: 0;
+  flex-shrink: 0; align-self: flex-start;
   display: grid; place-items: center;
-  width: 34px; height: 34px;
-  border: 0; border-radius: 10px;
-  background: transparent; color: var(--text-muted);
+  width: 36px; height: 36px; padding: 0;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface-2); color: var(--text-muted);
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
 }
-.task-head__close:hover { background: var(--surface-2); color: var(--text); }
+.task-head__close svg { width: 16px; height: 16px; }
+.task-head__close:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+}
+.task-head__close:active { transform: scale(0.94); }
+.task-head__close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dialog--task .task-title-input { font-size: 0.98rem; font-weight: 500; }
 .dialog--task .task-title-input::placeholder { font-weight: 400; }
 .dialog--task .dialog__footer {
