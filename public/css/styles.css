@@ -2636,3 +2636,18 @@ input[type="date"], input[type="time"] {
   .dialog--task .dialog__footer { margin: 0.1rem -0.9rem 0; padding: 0.55rem 0.9rem 0.7rem; }
   .dialog--task .dialog__footer .btn { min-height: 38px; padding-top: 0.4rem; padding-bottom: 0.4rem; }
 }
+
+/* Phones: shorter Today boxes (clock and progress) */
+@media (max-width: 600px) {
+  .today .today__now, .today .today__main { padding: 0.4rem; }
+  .today .today__time { font-size: 1.2rem; }
+  .today .today__day { margin-top: 0.25rem; padding-top: 0.25rem; }
+  .today .today__fulldate { font-size: 0.74rem; }
+  .today .today__main { gap: 0.2rem; }
+  .today .ring { width: 42px; height: 42px; }
+  .today .ring circle { stroke-width: 5; }
+  .today .ring__label { font-size: 0.72rem; }
+  .today .today__count { font-size: 0.7rem; }
+  .today .today__pills { margin-top: 0.15rem; }
+  .today .today__pill { padding: 0.03rem 0.4rem; font-size: 0.64rem; }
+}
