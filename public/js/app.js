@@ -481,7 +481,7 @@
     try {
       const [filtered, all, cats, months, stats] = await Promise.all([
         api.listTasks(state.filters),
-        api.listTasks({}),
+        api.listTasks({ status: 'all' }), // completed included: stats and the Today card need them
         api.categories(),
         api.months(),
         api.stats(),

@@ -325,8 +325,8 @@ const api = {
     const { search = '', status = '', priority = '', category = '', month = '', sort = 'newest' } = params;
     const q = search.trim().toLowerCase();
     let tasks = [...cache.values()].filter((t) => (status === 'deleted' ? t.deletedAt : !t.deletedAt));
-    // Finished tasks only show under Completed (and in the trash once deleted)
-    if (status !== 'completed' && status !== 'deleted') tasks = tasks.filter((t) => t.status !== 'completed');
+    // Finished tasks only show under Completed (and in the trash once deleted); 'all' keeps everything
+    if (!['completed', 'deleted', 'all'].includes(status)) tasks = tasks.filter((t) => t.status !== 'completed');
     if (status === 'overdue') tasks = tasks.filter(isOverdue);
     else if (status === 'today') tasks = tasks.filter(isDueToday);
     else if (STATUSES.includes(status)) tasks = tasks.filter((t) => t.status === status);
