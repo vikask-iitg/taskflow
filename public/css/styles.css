@@ -2597,3 +2597,32 @@ input[type="date"], input[type="time"] {
 .task-card .task-card__time { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
 .task-card .task-card__time .chip { font-size: 0.7rem; padding: 0.1rem 0.45rem; }
 @media (max-width: 600px) { .task-card .task-card__time .chip { font-size: 0.68rem; padding: 0.1rem 0.4rem; } }
+
+/* Phones: compact task form so it fits on one screen without scrolling */
+@media (max-width: 600px) {
+  .dialog--task { width: calc(100vw - 1.25rem); max-height: 96dvh; }
+  .dialog--task .form { gap: 0.55rem; padding: 0 0.9rem; }
+  .dialog--task .dialog__header { padding: 0.8rem 0 0.1rem; }
+  .dialog--task .dialog__header h2 { font-size: 1.05rem; }
+  .dialog--task .task-head { gap: 0.6rem; }
+  .dialog--task .task-head__sub { display: none; }
+  .dialog--task .task-head__icon { width: 34px; height: 34px; border-radius: 10px; }
+  .dialog--task .task-head__close { width: 32px; height: 32px; align-self: center; }
+  .dialog--task .field { gap: 0.2rem; }
+  .dialog--task .field label, .dialog--task .field__label { font-size: 0.78rem; }
+  .dialog--task input:not([type="checkbox"]):not([type="file"]), .dialog--task select,
+  .dialog--task .select__trigger, .dialog--task .time-field { min-height: 38px; }
+  .dialog--task textarea { min-height: 46px; height: 46px; }
+  /* Attachments: just the button (phones can't drag or paste files) */
+  .dialog--task .dropzone { padding: 0.3rem; }
+  .dialog--task .dropzone__badge, .dialog--task .dropzone__text { display: none; }
+  .dialog--task .dropzone__browse { flex: 1; justify-content: center; }
+  /* Quick picks stay on one line and scroll sideways if needed */
+  .dialog--task .quick-row { margin-top: 0.1rem; }
+  .dialog--task .time-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0.25rem; }
+  .dialog--task .time-chips::-webkit-scrollbar { display: none; }
+  .dialog--task .time-chip { flex-shrink: 0; padding: 0.15rem 0.45rem; font-size: 0.72rem; }
+  .dialog--task .task-grid { gap: 0.55rem 0.6rem; }
+  .dialog--task .dialog__footer { margin: 0.1rem -0.9rem 0; padding: 0.55rem 0.9rem 0.7rem; }
+  .dialog--task .dialog__footer .btn { min-height: 38px; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+}
