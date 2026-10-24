@@ -530,8 +530,9 @@
   }
 
   const monthLabel = (key) => {
+    // "October (2026)"
     const [y, m] = key.split('-').map(Number);
-    return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    return `${new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long' })} (${y})`;
   };
 
   function renderMonths(months) {

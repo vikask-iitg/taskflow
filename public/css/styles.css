@@ -2462,27 +2462,29 @@ input[type="date"], input[type="time"] {
   color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
 }
+/* Upcoming: an indigo card, as distinct and saturated as the yellow Quick note */
+.reminders.side-card {
+  background: color-mix(in srgb, var(--primary) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+  box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+.reminders .reminders__icon {
+  color: var(--primary-contrast); background: var(--primary);
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--primary) 70%, transparent);
+}
+:root[data-theme="dark"] .reminders .reminders__icon { color: var(--primary-contrast); background: var(--primary); }
+.reminders .reminders__title { color: color-mix(in srgb, var(--primary) 55%, var(--text)); }
+.reminders .reminders__sub { color: color-mix(in srgb, var(--primary) 45%, var(--text-muted)); }
+.reminders__toggle.reminders__toggle {
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.reminders .reminders__count { background: var(--surface); }
+.reminders .upcoming-empty { background: color-mix(in srgb, var(--primary) 5%, var(--surface)); border-color: color-mix(in srgb, var(--primary) 30%, var(--border)); }
+.reminders .next-up:not(.next-up--soon) { background: var(--surface); }
+.reminders .next-up:not(.next-up--soon):hover { background: color-mix(in srgb, var(--primary) 6%, var(--surface)); }
 @media (max-width: 600px) {
-  /* Indigo card, as distinct and saturated as the yellow Quick note below it */
-  .reminders.side-card {
-    background: color-mix(in srgb, var(--primary) 11%, var(--surface));
-    border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
-    box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--primary) 60%, transparent);
-    padding: 0.75rem 0.8rem;
-  }
-  .reminders .reminders__icon {
-    color: var(--primary-contrast); background: var(--primary);
-    box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--primary) 70%, transparent);
-  }
-  :root[data-theme="dark"] .reminders .reminders__icon { color: var(--primary-contrast); background: var(--primary); }
-  .reminders .reminders__title { color: color-mix(in srgb, var(--primary) 55%, var(--text)); }
-  .reminders .reminders__sub { color: color-mix(in srgb, var(--primary) 45%, var(--text-muted)); }
-  .reminders__toggle.reminders__toggle {
-    background: color-mix(in srgb, var(--primary) 16%, var(--surface));
-    border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-  }
-  .reminders .reminders__count { background: var(--surface); }
-  .reminders .upcoming-empty { background: color-mix(in srgb, var(--primary) 5%, var(--surface)); border-color: color-mix(in srgb, var(--primary) 30%, var(--border)); }
+  .reminders.side-card { padding: 0.75rem 0.8rem; }
   .reminders .reminders__title { font-size: 0.95rem; line-height: 1.2; }
   .reminders:not(.is-open) .reminders__peek {
     display: block; margin-top: 0.15rem;
