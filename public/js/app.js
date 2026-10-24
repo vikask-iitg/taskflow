@@ -2580,6 +2580,11 @@
   // Generic close buttons + click on backdrop
   $$('dialog').forEach((dlg) => {
     $$('[data-close]', dlg).forEach((b) => b.addEventListener('click', () => dlg.close()));
+    // The task form only closes from its own buttons, so a stray click or Esc never loses what was typed
+    if (dlg.id === 'task-dialog') {
+      dlg.addEventListener('cancel', (e) => e.preventDefault());
+      return;
+    }
     dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
   });
 
