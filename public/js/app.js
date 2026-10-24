@@ -707,7 +707,9 @@
     const total = doneToday + leftToday;
     const pct = total ? Math.round((doneToday / total) * 100) : doneToday ? 100 : 0;
 
-    $('#today-pct').textContent = total ? `${pct}%` : '–';
+    // The number with a smaller % sign; "100" gets a smaller size so it fits inside the ring
+    $('#today-pct').innerHTML = total ? `${pct}<span class="ring__pct">%</span>` : '–';
+    $('#today-pct').classList.toggle('ring__num--full', pct === 100);
     const circumference = 2 * Math.PI * 27;
     const ring = $('#today-ring-value');
     ring.style.strokeDasharray = `${circumference}`;

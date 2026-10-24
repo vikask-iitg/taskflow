@@ -1258,6 +1258,8 @@ input[type="date"], input[type="time"] {
 .select__content .badge { font-size: 0.78rem; padding: 0.2rem 0.6rem; }
 /* Short option lists fit their own box (and must not overflow the dialog's right edge) */
 .combo__list.select__list { width: 100%; min-width: 150px; }
+/* Month names with the year ("November 2026") need more room than the box; it's the last filter, so open leftwards */
+.select:has(#filter-month) .select__list { width: max-content; min-width: max(100%, 150px); left: auto; right: 0; }
 .select__option { grid-template-columns: minmax(0, 1fr) auto; }
 
 .status-opt { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.88rem; font-weight: 500; color: var(--text); }
@@ -2343,6 +2345,15 @@ input[type="date"], input[type="time"] {
 .ring.is-complete .ring__value { stroke: var(--low-dot); }
 .ring__label { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; color: var(--text); }
 .ring__caption { margin-top: 0.15rem; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.ring__num { display: inline-flex; align-items: flex-start; letter-spacing: -0.02em; }
+.ring__pct { margin: 0.08em 0 0 0.05em; font-size: 0.55em; font-weight: 700; color: var(--text-muted); }
+.ring__num--full { font-size: 0.78em; }
+/* All done: green on a soft green disc, no glow */
+.ring.is-complete .ring__value { filter: none; }
+.ring.is-complete circle { stroke-width: 5; }
+.ring.is-complete .ring__label { inset: 17%; border-radius: 50%; background: var(--low-bg); color: var(--low-fg); }
+.ring.is-complete .ring__pct { color: inherit; opacity: 0.75; }
+.ring.is-complete .ring__caption { display: none; }
 .today .today__count { font-size: 0.95rem; font-weight: 500; }
 .today .today__count strong { color: var(--primary); }
 .today__pills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
@@ -2354,9 +2365,10 @@ input[type="date"], input[type="time"] {
 @media (max-width: 600px) {
   /* Stacked and centred: ring, then the count, then the pills */
   .today .today__main { flex-direction: column; justify-content: center; gap: 0.35rem; padding: 0.5rem 0.4rem; text-align: center; align-self: stretch; }
-  .today .ring { width: 46px; height: 46px; }
-  .today .ring__caption { font-size: 0.42rem; }
-  .today .ring__label { font-size: 0.68rem; }
+  .today .ring { width: 52px; height: 52px; }
+  .today .ring circle { stroke-width: 5.5; }
+  .today .ring__caption { display: none; }
+  .today .ring__label { font-size: 0.82rem; }
   .today .today__text { display: flex; flex-direction: column; align-items: center; min-width: 0; }
   .today .today__count { font-size: 0.72rem; white-space: nowrap; }
   .today__pills { justify-content: center; flex-wrap: nowrap; margin-top: 0.25rem; gap: 0.2rem; }
