@@ -2327,11 +2327,6 @@ input[type="date"], input[type="time"] {
   .reminders.is-open .reminders__toggle svg { transform: rotate(180deg); }
   .reminders:not(.is-open) .reminders__body { display: none; }
   .reminders.is-open .reminders__body { margin-top: 0.6rem; }
-  /* Nothing upcoming: show the message instead of folding it away */
-  .reminders--empty .reminders__header { cursor: default; }
-  .reminders--empty .reminders__toggle,
-  .reminders.reminders--empty:not(.is-open) .reminders__peek { display: none; }
-  .reminders.reminders--empty .reminders__body { display: block; margin-top: 0.6rem; }
   .reminders--empty .upcoming-empty { padding: 0.8rem; }
 }
 

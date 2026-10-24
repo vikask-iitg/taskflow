@@ -758,7 +758,7 @@
     $('#reminders').classList.toggle('reminders--empty', !upcoming.length);
     $('#reminders-count').hidden = !upcoming.length;
     if (!upcoming.length) {
-      $('#reminders-peek').innerHTML = '<span class="reminders__peek-title">No upcoming tasks</span>';
+      $('#reminders-peek').innerHTML = '<span class="reminders__peek-title">Nothing due in the next 7 days</span>';
       $('#next-up').innerHTML = `
         <p class="upcoming-empty">
           <strong>No upcoming tasks</strong>
