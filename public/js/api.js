@@ -20,9 +20,10 @@ import {
   Timestamp, writeBatch,
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-const STATUSES = ['pending', 'in-progress', 'completed'];
+const STATUSES = ['pending', 'completed'];
 const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
-const TRASH_RETENTION_DAYS = 30;
+const TRASH_RETENTION_DAYS = 60;
+const COMPLETED_RETENTION_DAYS = 60; // completed tasks are removed this long after completion
 // Always offered in the category picker and can't be deleted
 const DEFAULT_CATEGORIES = ['Bills', 'Family', 'Groceries', 'Health', 'Interview', 'Personal', 'Purchase', 'Study', 'Work'];
 
@@ -81,7 +82,7 @@ function toTask(snap) {
     _id: snap.id,
     title: d.title,
     description: d.description || '',
-    status: d.status,
+    status: d.status === 'in-progress' ? 'pending' : d.status, // "In progress" was retired
     priority: d.priority,
     category: d.category || '',
     dueDate: iso(d.dueDate),
@@ -193,10 +194,14 @@ const monthKey = (t) => {
 const isDueToday = (t) => Boolean(t.dueDate) && new Date(t.dueDate).toDateString() === new Date().toDateString();
 const isOverdue = (t) => t.dueDate && t.status !== 'completed' && new Date(t.dueDate) < new Date();
 
-// Deleted tasks are removed for good after TRASH_RETENTION_DAYS
+// Deleted tasks are removed for good after TRASH_RETENTION_DAYS,
+// completed ones COMPLETED_RETENTION_DAYS after they were completed
 async function purgeOldTrash() {
-  const cutoff = Date.now() - TRASH_RETENTION_DAYS * 86400000;
-  const old = [...cache.values()].filter((t) => t.deletedAt && new Date(t.deletedAt).getTime() < cutoff);
+  const trashCutoff = Date.now() - TRASH_RETENTION_DAYS * 86400000;
+  const doneCutoff = Date.now() - COMPLETED_RETENTION_DAYS * 86400000;
+  const old = [...cache.values()].filter((t) => (t.deletedAt
+    ? new Date(t.deletedAt).getTime() < trashCutoff
+    : t.status === 'completed' && t.completedAt && new Date(t.completedAt).getTime() < doneCutoff));
   for (const t of old) await api.deleteTaskForever(t._id).catch(() => {});
 }
 
@@ -320,8 +325,9 @@ const api = {
     const { search = '', status = '', priority = '', category = '', month = '', sort = 'newest' } = params;
     const q = search.trim().toLowerCase();
     let tasks = [...cache.values()].filter((t) => (status === 'deleted' ? t.deletedAt : !t.deletedAt));
-    if (status === 'active') tasks = tasks.filter((t) => t.status !== 'completed');
-    else if (status === 'overdue') tasks = tasks.filter(isOverdue);
+    // Finished tasks only show under Completed (and in the trash once deleted)
+    if (status !== 'completed' && status !== 'deleted') tasks = tasks.filter((t) => t.status !== 'completed');
+    if (status === 'overdue') tasks = tasks.filter(isOverdue);
     else if (status === 'today') tasks = tasks.filter(isDueToday);
     else if (STATUSES.includes(status)) tasks = tasks.filter((t) => t.status === status);
     if (priority) tasks = tasks.filter((t) => t.priority === priority);
@@ -364,14 +370,14 @@ const api = {
     const count = (s) => active.filter((t) => t.status === s).length;
     return {
       stats: {
-        total: active.length,
+        total: active.length - count('completed'),
         pending: count('pending'),
-        inProgress: count('in-progress'),
         completed: count('completed'),
         overdue: active.filter(isOverdue).length,
         deleted: all.length - active.length,
       },
       trashRetentionDays: TRASH_RETENTION_DAYS,
+      completedRetentionDays: COMPLETED_RETENTION_DAYS,
     };
   },
 

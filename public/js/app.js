@@ -10,13 +10,14 @@
     deletedCount: 0,
     categories: [],
     defaultCategories: [],
-    trashRetentionDays: 30,
+    trashRetentionDays: 60,
+    completedRetentionDays: 60,
     editingId: null,
     // The list opens on today's tasks; the Total card shows everything
     filters: { search: '', status: 'today', priority: '', category: '', month: '', sort: 'newest' },
   };
 
-  const STATUS_LABELS = { pending: 'Pending', 'in-progress': 'In progress', completed: 'Completed' };
+  const STATUS_LABELS = { pending: 'Pending', completed: 'Completed' };
   const PRIORITY_LABELS = { low: 'Low', medium: 'Medium', high: 'High' };
 
   /* ---------------- Helpers ---------------- */
@@ -379,6 +380,11 @@
     api.logout();
     state.tasks = [];
     state.allTasks = [];
+    state.filters.status = 'today';
+    $('#filter-status').value = 'today';
+    filterSelects.status.refresh();
+    syncStatButtons();
+    todayPicked = false;
     $('#task-list').innerHTML = '';
     lastListHtml = '';
     showAuth();
@@ -468,6 +474,7 @@
   }
 
   let loadSeq = 0;
+  let todayPicked = false; // set when Today is chosen from its card or the Status dropdown
   async function loadTasks({ silent = false } = {}) {
     const seq = ++loadSeq;
     if (!silent) renderSkeletons();
@@ -480,10 +487,20 @@
         api.stats(),
       ]);
       if (seq !== loadSeq) return; // a newer request superseded this one
+      // The list opens on today's tasks, but falls back to Total when nothing is due today
+      // (unless the person picked Today themselves)
+      if (state.filters.status === 'today' && !todayPicked && all.tasks.length && !all.tasks.some(isOpenToday)) {
+        state.filters.status = '';
+        $('#filter-status').value = '';
+        filterSelects.status.refresh();
+        syncStatButtons();
+        return loadTasks({ silent });
+      }
       state.tasks = filtered.tasks;
       state.allTasks = all.tasks;
       state.deletedCount = stats.stats.deleted;
       state.trashRetentionDays = stats.trashRetentionDays;
+      state.completedRetentionDays = stats.completedRetentionDays;
       state.defaultCategories = cats.defaultCategories || [];
       renderCategories(cats.categories);
       renderMonths(months.months);
@@ -531,12 +548,11 @@
     const all = state.allTasks;
     const count = (s) => all.filter((t) => t.status === s).length;
     const overdue = all.filter(isOverdue).length;
-    $('#stat-total').textContent = all.length;
+    // Completed tasks only count under Completed
+    $('#stat-total').textContent = all.length - count('completed');
     $('#stat-pending').textContent = count('pending');
-    $('#stat-progress').textContent = count('in-progress');
     $('#stat-done').textContent = count('completed');
-    $('#stat-today').textContent = all.filter(isDueToday).length;
-    $('#stat-deleted').textContent = state.deletedCount;
+    $('#stat-today').textContent = all.filter(isOpenToday).length;
     syncStatButtons();
 
     const active = all.length - count('completed');
@@ -570,7 +586,22 @@
     noteEl.style.height = 'auto';
     noteEl.style.height = `${Math.min(Math.max(noteEl.scrollHeight, 120), 320)}px`;
     $('#note-count').textContent = `${noteEl.value.length.toLocaleString()} / ${NOTE_MAX.toLocaleString()}`;
+    // Shown under the title while the dropdown is collapsed (phones)
+    $('#note-peek').textContent = noteEl.value.split('\n').find((line) => line.trim())?.trim() || 'Empty. Tap to write something';
   }
+
+  // Phones: Quick note is collapsed to its header; tapping the header opens it
+  const noteToggle = $('#note-toggle');
+  function setNoteOpen(open) {
+    $('.side-card.note').classList.toggle('is-open', open);
+    noteToggle.setAttribute('aria-expanded', String(open));
+    noteToggle.setAttribute('aria-label', `${open ? 'Hide' : 'Show'} quick note`);
+    if (open) sizeNote(); // it couldn't be measured while hidden
+  }
+  $('.note__header').addEventListener('click', () => {
+    if (getComputedStyle(noteToggle).display === 'none') return; // wider screens: always open
+    setNoteOpen(!$('.side-card.note').classList.contains('is-open'));
+  });
 
   function loadNote() {
     clearTimeout(noteTimer);
@@ -723,9 +754,19 @@
       })
       .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-    const section = $('#reminders');
-    section.hidden = upcoming.length === 0;
-    if (!upcoming.length) return;
+    $('#reminders').hidden = false;
+    $('#reminders').classList.toggle('reminders--empty', !upcoming.length);
+    $('#reminders-count').hidden = !upcoming.length;
+    if (!upcoming.length) {
+      $('#reminders-peek').innerHTML = '<span class="reminders__peek-title">No upcoming tasks</span>';
+      $('#next-up').innerHTML = `
+        <p class="upcoming-empty">
+          <strong>No upcoming tasks</strong>
+          <span>Nothing is due in the next 7 days.</span>
+        </p>`;
+      $('#upcoming-list').innerHTML = '';
+      return;
+    }
 
     $('#reminders-count').textContent = `${upcoming.length} task${upcoming.length === 1 ? '' : 's'}`;
 
@@ -787,9 +828,14 @@
     return timeChip('🕒', 'Added', t.createdAt);
   }
 
-  function deletedCardHtml(t) {
-    const purgeAt = new Date(new Date(t.deletedAt).getTime() + state.trashRetentionDays * 86400000);
+  // "⏳ Removed in 12 days": deleted and completed tasks are removed for good after a while
+  function removalChip(from, days) {
+    const purgeAt = new Date(new Date(from).getTime() + days * 86400000);
     const daysLeft = Math.max(0, Math.ceil((purgeAt - new Date()) / 86400000));
+    return `<span class="chip chip--time"><span aria-hidden="true">⏳</span><span>Removed in ${daysLeft} day${daysLeft === 1 ? '' : 's'}</span></span>`;
+  }
+
+  function deletedCardHtml(t) {
     return `
       <li class="task-card task-card--${t.priority} is-deleted" data-id="${t._id}">
         <span class="trash-icon" aria-hidden="true">🗑</span>
@@ -798,7 +844,7 @@
           <div class="task-card__time">
             ${timeChip('🗑', 'Deleted', t.deletedAt)}
             ${doneChipHtml(t)}
-            <span class="chip chip--time"><span aria-hidden="true">⏳</span><span>Removed in ${daysLeft} day${daysLeft === 1 ? '' : 's'}</span></span>
+            ${removalChip(t.deletedAt, state.trashRetentionDays)}
           </div>
           ${t.description ? `<p class="task-card__desc">${linkify(t.description)}</p>` : ''}
           <div class="task-card__meta">
@@ -839,7 +885,7 @@
         </label>
         <div class="task-card__body">
           <h3 class="task-card__title"><button type="button" class="task-card__open" data-action="open" aria-haspopup="dialog">${escapeHtml(t.title)}</button></h3>
-          <div class="task-card__time">${timeChipsHtml(t)}</div>
+          <div class="task-card__time">${timeChipsHtml(t)}${done && completedOn(t) ? removalChip(completedOn(t), state.completedRetentionDays) : ''}</div>
           ${t.description ? `<p class="task-card__desc">${linkify(t.description)}</p>` : ''}
           <div class="task-card__meta">
             <span class="badge badge--${t.priority}"><span class="visually-hidden">Priority: </span>${PRIORITY_LABELS[t.priority]}</span>
@@ -861,6 +907,7 @@
 
   const TODAY_BADGE_ICON = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
   const isDueToday = (t) => Boolean(t.dueDate) && new Date(t.dueDate).toDateString() === new Date().toDateString();
+  const isOpenToday = (t) => t.status !== 'completed' && isDueToday(t);
 
   function renderTasks() {
     closeStatusMenu();
@@ -882,7 +929,9 @@
     if (restore) $(`.task-card[data-id="${restore.id}"] [data-action="${restore.action}"]`, list)?.focus();
 
     const inTrash = state.filters.status === 'deleted';
-    $('#clear-filters').hidden = !Object.entries(state.filters).some(([k, v]) => (k === 'status' ? v !== 'today' : k !== 'sort' && v));
+    // Total is the default too when nothing is due today (see loadTasks)
+    const defaultStatus = state.allTasks.some(isOpenToday) ? 'today' : '';
+    $('#clear-filters').hidden = !Object.entries(state.filters).some(([k, v]) => (k === 'status' ? v !== 'today' && v !== defaultStatus : k !== 'sort' && v));
     $('#trash-banner').hidden = !inTrash;
     $('#trash-days').textContent = state.trashRetentionDays;
     $('#empty-trash-btn').disabled = !state.deletedCount;
@@ -915,16 +964,26 @@
     const copies = [...state.tasks, ...state.allTasks].filter((t) => t._id === id);
     const apply = (values) => copies.forEach((t) => Object.assign(t, values));
     apply({ status, completedAt: status === 'completed' ? new Date().toISOString() : null });
-    const card = $(`.task-card[data-id="${id}"]`);
-    if (card) card.outerHTML = taskCardHtml(task);
+    // Completed tasks move to Completed right away (and reopened ones leave it)
+    const inCompletedList = state.filters.status === 'completed';
+    if (state.filters.status !== 'deleted' && (status === 'completed') !== inCompletedList) {
+      state.tasks = state.tasks.filter((t) => t._id !== id);
+      renderTasks();
+    } else {
+      const card = $(`.task-card[data-id="${id}"]`);
+      if (card) card.outerHTML = taskCardHtml(task);
+    }
     renderStats();
     refreshDetail();
     try {
       await api.updateTask(id, { status });
-      if (status === 'completed') toast('Task completed 🎉', 'success');
+      if (status === 'completed') {
+        toast(`Moved “${task.title}” to Completed 🎉`, 'success', { label: 'Undo', onClick: () => setStatus(id, prev.status) });
+      }
       loadTasks({ silent: true });
     } catch (err) {
       apply(prev);
+      loadTasks({ silent: true });
       renderTasks();
       renderStats();
       refreshDetail();
@@ -1784,7 +1843,6 @@
 
   const STATUS_ICONS = {
     pending: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>',
-    'in-progress': '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg>',
     completed: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.6-4.9"/></svg>',
   };
 
@@ -2535,13 +2593,17 @@
     .forEach(([sel, key]) => {
       $(sel).addEventListener('change', (e) => {
         state.filters[key] = e.target.value;
-        if (key === 'status') syncStatButtons();
+        if (key === 'status') {
+          todayPicked = e.target.value === 'today';
+          syncStatButtons();
+        }
         loadTasks();
       });
     });
 
   $('#clear-filters').addEventListener('click', () => {
     Object.assign(state.filters, { search: '', status: 'today', priority: '', category: '', month: '' });
+    todayPicked = false;
     $('#search').value = '';
     ['status', 'priority', 'category', 'month'].forEach((key) => {
       $(`#filter-${key}`).value = state.filters[key];
@@ -2574,6 +2636,7 @@
   $$('.stat[data-filter]').forEach((b) => {
     b.addEventListener('click', () => {
       const { filter } = b.dataset;
+      todayPicked = filter === 'today';
       // Clicking the card that is already selected keeps it selected (and still jumps to the list)
       if (state.filters.status !== filter) {
         state.filters.status = filter;

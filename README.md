@@ -38,7 +38,7 @@ users/{uid}/tasks/{taskId}   title, description, status, priority, category, due
                              attachments[], completedAt, deletedAt, createdAt, updatedAt
 ```
 
-Access is controlled by [firestore.rules](firestore.rules): each user can read and write only their own documents, every field is type- and size-checked, and timestamps must be set by the server. Deleted tasks stay in the trash for 30 days, then the app removes them.
+Access is controlled by [firestore.rules](firestore.rules): each user can read and write only their own documents, every field is type- and size-checked, and timestamps must be set by the server. Deleted tasks stay in the trash for 60 days, then the app removes them.
 
 ## Deploying Firebase config
 
