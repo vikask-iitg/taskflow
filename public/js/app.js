@@ -572,7 +572,6 @@
   const noteEl = $('#quick-note');
   const NOTE_MAX = 10000;
   const NOTE_SAVE_DELAY = 700; // ms after the last keystroke
-  const noteTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   let noteTimer = null;
   let noteSaved = ''; // last value the server has
   let noteSaving = null;
@@ -609,7 +608,7 @@
     noteEl.value = noteSaved;
     sizeNote();
     const at = state.user?.noteUpdatedAt;
-    setNoteStatus(noteSaved && at ? `Saved · ${noteTime.format(new Date(at))}` : '');
+    setNoteStatus(noteSaved && at ? `Saved · ${fmtDateSmart(at)}` : '');
   }
 
   async function saveNote({ keepalive = false } = {}) {
@@ -623,7 +622,7 @@
       noteSaved = res.note;
       if (state.user) Object.assign(state.user, { note: res.note, noteUpdatedAt: res.noteUpdatedAt });
       // Only show "Saved" if nothing new was typed while the request was in flight
-      if (noteEl.value === noteSaved) setNoteStatus(`Saved · ${noteTime.format(new Date(res.noteUpdatedAt))}`, 'saved');
+      if (noteEl.value === noteSaved) setNoteStatus(`Saved · ${fmtDateSmart(res.noteUpdatedAt)}`, 'saved');
     } catch (err) {
       setNoteStatus('Not saved, retrying…', 'error');
       noteTimer = setTimeout(saveNote, 3000);
